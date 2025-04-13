@@ -1,7 +1,7 @@
 var mongoose = require("mongoose");
-const BaseSchema = require("./BaseSchema");
 
-var ProductSchema = new BaseSchema({
+
+var ProductSchema = new mongoose.Schema({
   _id: {
     type: String,
     default: function () {
@@ -15,19 +15,18 @@ var ProductSchema = new BaseSchema({
   slug: {
     type: String,
     required: true,
+    unique: true,
   },
-  images: {
-    type: Array,
-    required: true,
-    of: {
-      type: {
-        imagePath: {
-          type: String,
-          required: true,
-        },
+  images: [
+    {
+
+      imagePath: {
+        type: String,
+        required: true,
       },
+
     },
-  },
+  ],
   isActive: {
     type: Boolean,
     default: 0,
@@ -40,8 +39,7 @@ var ProductSchema = new BaseSchema({
   createdAt: {
     type: Date,
     default: Date.now,
-  },
-  id: Number,
+  }
 });
 
 //console.log(ProductSchema.statics);

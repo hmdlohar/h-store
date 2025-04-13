@@ -25,11 +25,11 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1",
+    "express": "^4.21.2",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^4.13.21"
+    "mongoose": "^5.13.23"
   },
   "devDependencies": {
-    "nodemon": ""
+    "nodemon": "^3.1.9"
   }
 }

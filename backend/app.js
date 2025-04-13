@@ -26,6 +26,7 @@ app.use(cors());
 
 app.use("/api", api);
 
+
 app.use("/", express.static("./web"));
 app.get("/*", (req, res) => {
   res.sendFile(__dirname + "/web/index.html");
