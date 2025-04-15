@@ -1,0 +1,26 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-undef": "error", // Disallow using variables that are not defined
+    "no-unused-vars": "warn", // Warn about declared but unused variables
+    "no-unreachable": "error", // Catch code after return/break/etc.
+    "no-console": "off", // Allow console.log for debugging
+    "prefer-const": "off", // Don't force using const
+    "no-var": "off", // Allow var if needed,
+    "react/react-in-jsx-scope": "error",
+    "react/no-unstable-nested-components": "error",
+    "react/no-typos": "error",
+    "react/no-unsafe": "error",
+    "react/no-unused-state": "error",
+    "react/no-will-update-with-props": "error",
+    "react/require-default-props": "error"
+  }
+}

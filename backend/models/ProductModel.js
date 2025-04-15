@@ -7,7 +7,7 @@ var ProductSchema = new mongoose.Schema({
       return new mongoose.Types.ObjectId();
     },
   },
-  title: {
+  name: {
     type: String,
     required: true,
   },

@@ -5,9 +5,11 @@ const theme = createTheme({
   palette: {
     primary: {
       main: "#FF6B6B", // Example color: Coral from the logo
+      contrastText: "#FFFFFF",
     },
     secondary: {
       main: "#383A49", // Example color: Dark Gray from the logo
+      contrastText: "#FFFFFF",
     },
     // You can add more color variations as needed, e.g., light, dark, contrastText
   },

@@ -1,6 +1,6 @@
 const product = {
-  name: "Personalized Dual Name Illusion with Red Heart | 3D Flip Name Plate | Gift for Valentine, Anniversary, Birthday, Wedding",
-  slug: "personalized-dual-name-illusion-red-heart-3d-flip-name-plate-gift-valentine-anniversary-birthday-wedding",
+  name: "Couple Name (Red Heart)",
+  slug: "couple-name-red-heart",
   category: "Dual Name",
   description:
     `

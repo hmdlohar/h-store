@@ -1,6 +1,6 @@
 const product = {
-  name: "Couple Name (Two color) | Personalized Dual Name Illusion | 3D Flip Name Plate | Gift for Husband Wife Boyfriend, Valentine, Anniversary, Birthday, Wedding",
-  slug: "couple-name-two-color-personalized-dual-name-illusion-3d-flip-name-plate-gift-for-husband-wife-boyfriend-valentine-anniversary-birthday-wedding",
+  name: "Couple Name (Two color)",
+  slug: "couple-name-two-color",
   category: "Dual Name",
   description:
     `

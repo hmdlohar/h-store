@@ -1,6 +1,6 @@
  const product = {
-  name: "Customized Photo Moon Lamp – 3D Printed LED Night Light for Couples, Unique Gift for Anniversary, Birthday & Valentine's",
-  slug: "customized-photo-moon-lamp-3d-printed-led-night-light-for-couples-unique-gift-for-anniversary-birthday-valentines",
+  name: "Customized Photo Moon Lamp",
+  slug: "customized-photo-moon-lamp",
   category: "Lamps",
   description:
     `

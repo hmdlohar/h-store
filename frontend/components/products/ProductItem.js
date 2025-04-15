@@ -1,30 +1,83 @@
-import React from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Box } from '@mui/material';
-import EcomImage from '@/common/EcomImage';
+import React from "react";
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+  Chip,
+  Stack,
+} from "@mui/material";
+import EcomImage from "@/common/EcomImage";
+import NextLink from "next/link";
 
 const ProductItem = ({ product }) => {
-  if (!product) {
-    return null; // Or a "Loading" or "No Product" message
-  }
+  const { mainImage, price, mrp, description } = product;
+
+  const discountPercent = Math.round(((mrp - price) / mrp) * 100);
+  const hasDiscount = mrp > price;
 
   return (
-    <Grid item xs={12} sm={6} md={4} lg={3}>
-      <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Use EcomImage for the product image */}
-        <EcomImage
-          path={product.image}
-          alt={product.name}
+    <Box
+      component={NextLink}
+      href={`/p/${product.slug}`}
+      sx={{
+        boxShadow: 3,
+        borderRadius: 2,
+        position: "relative",
+        display: 'block',
+        textDecoration: 'none',
+        color: 'inherit',
+        overflow: 'hidden',
+        transition: 'box-shadow 0.2s',
+        '&:hover': { boxShadow: 6 },
+      }}
+    >
+      {hasDiscount && (
+        <Chip
+          label={`${discountPercent}% OFF`}
+          color="success"
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            fontWeight: "bold",
+            zIndex: 1,
+          }}
         />
-        <CardContent sx={{ flexGrow: 1 }}>
-          <Typography variant="h6" component="h2" sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }}>
-            {product.name}
+      )}
+
+      <EcomImage
+        path={mainImage.imagePath}
+        alt="product"
+        style={{
+          width: "100%",
+        }}
+      />
+
+      <CardContent sx={{ px: 1, py: 1 }}>
+        <Typography variant="body2" fontWeight="bold" gutterBottom>
+          {product.name}
+        </Typography>
+
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="h6" fontWeight="bold" color="text.primary">
+            ₹{price}
           </Typography>
-          <Typography sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-            ₹{product.price}
-          </Typography>
-        </CardContent>
-      </Card>
-    </Grid>
+
+          {hasDiscount && (
+            <Typography
+              variant="body2"
+              color="text.disabled"
+              sx={{ textDecoration: "line-through" }}
+            >
+              ₹{mrp}
+            </Typography>
+          )}
+        </Box>
+      </CardContent>
+    </Box>
   );
 };
 
