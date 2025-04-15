@@ -15,7 +15,7 @@
   mrp: 999,
   price: 699,
   mainImage: {
-    imagePth: "products/moon-lamp/MainImage.png"
+    imagePath: "products/moon-lamp/MainImage.png"
   },
   images: [
     {

@@ -13,7 +13,7 @@ const product = {
   mrp: 999,
   price: 399, // Base price for Upto 5 Characters
   mainImage: {
-    imagePth: "products/dual-name-with-heart/1.png"
+    imagePath: "products/dual-name-with-heart/1.png"
   },
   variants: {
     "6 Characters": {

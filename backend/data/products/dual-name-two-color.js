@@ -14,7 +14,7 @@ const product = {
   mrp: 999,
   price: 350,
   mainImage: {
-    imagePth: "products/dual-name-two-color/43.png"
+    imagePath: "products/dual-name-two-color/43.png"
   },
   variants: {
     "6 Characters": {

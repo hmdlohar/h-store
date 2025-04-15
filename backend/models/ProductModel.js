@@ -1,6 +1,5 @@
 var mongoose = require("mongoose");
 
-
 var ProductSchema = new mongoose.Schema({
   _id: {
     type: String,
@@ -17,14 +16,17 @@ var ProductSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  mrp: Number,
+  price: Number,
+  mainImage: {
+    imagePath: String,
+  },
   images: [
     {
-
       imagePath: {
         type: String,
         required: true,
       },
-
     },
   ],
   isActive: {
@@ -39,7 +41,7 @@ var ProductSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-  }
+  },
 });
 
 //console.log(ProductSchema.statics);

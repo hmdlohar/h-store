@@ -1,14 +1,15 @@
 import EcomHead from "@/common/EcomHead";
 import HomePage from "@/components/index/HomePage";
+import ProductList from "@/components/products/ProductsPage";
 import MainLayout from "@/layout/MainLayout";
 
-export default function Home() {
+export default function Products() {
   return (
     <>
-      <EcomHead />
+      <EcomHead title="Products" />
 
       <MainLayout>
-        <HomePage />
+        <ProductList />
       </MainLayout>
     </>
   );
