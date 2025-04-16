@@ -1,24 +1,8 @@
-import React from "react";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  IconButton,
-  Container,
-  Box,
-  Link,
-  BottomNavigation,
-  BottomNavigationAction,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
+import SearchIcon from "@mui/icons-material/Search";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import HomeIcon from "@mui/icons-material/Home";
-import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { AppBar, Box, Button, IconButton, Link, Toolbar } from "@mui/material";
 import NextLink from "next/link";
-import Footer from "./Footer";
 
 const MainLayout = ({ children }) => {
   return (
@@ -103,10 +87,7 @@ const MainLayout = ({ children }) => {
         </Toolbar>
       </AppBar>
 
-      {/* Main Content */}
-      <Container maxWidth="lg" sx={{ flex: 1, overflow: "auto" }}>
-        {children}
-      </Container>
+      <Box>{children}</Box>
     </main>
   );
 };

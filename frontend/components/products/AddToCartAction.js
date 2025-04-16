@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Button, useTheme, useMediaQuery } from "@mui/material";
 import PropTypes from "prop-types";
 
-const AddToCartAction = ({ onClick, disabled, label = "Add To Cart" }) => {
+const AddToCartAction = ({ onClick, disabled, label = "Buy Now" }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
