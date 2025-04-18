@@ -22,7 +22,7 @@ const product = {
       field: "image",
       label: "Upload Image",
       required: true,
-      imageOptions: {
+      info: {
         aspectRatio: 1,
       },
     },

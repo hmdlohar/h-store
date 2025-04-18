@@ -23,13 +23,13 @@ var ProductSchema = new mongoose.Schema({
           name: String,
         },
       ],
-      info: Object,
-      /* Image Options
+      /* Info
       {
         aspectRatio: Number,
+        uppercase: Boolean
       }
       */
-      imageOptions: Object,
+      info: Object,
     },
   ],
   name: {

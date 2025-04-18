@@ -45,7 +45,6 @@ export default function GetAddress() {
 
   const action = useMutation({
     mutationFn: async (values) => {
-      console.log(values, " value");
       const response = await ApiService.call(
         `/api/order/set-address/${order._id}`,
         "put",
@@ -94,7 +93,6 @@ export default function GetAddress() {
             staleTime: 1000 * 60 * 10,
             retry: false,
           });
-          console.log(errors, "err");
 
           // Autofill city/state when pinData changes
           if (
