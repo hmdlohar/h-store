@@ -4,6 +4,9 @@ const OrderModel = require("../models/OrderModel");
 const utils = require("../services/Utils");
 const { setSubTotal } = require("../util/orderUtils");
 const ProductModel = require("../models/ProductModel");
+const ImageKitService = require("../services/ImageKitService");
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() }); // or diskStorage
 
 router.post("/", async (req, res) => {
   try {
@@ -73,6 +76,28 @@ router.put("/set-address/:orderId", async (req, res) => {
 
     await OrderModel.updateOne({ _id: orderId }, order);
     return res.sendSuccess(order, "Order updated Successfully");
+  } catch (ex) {
+    console.log(ex);
+    res.sendError(ex, utils.parseErrorString(ex));
+  }
+});
+
+// Single file upload (field name should match the one in FormData)
+router.post("/upload-image", upload.single("file"), async (req, res) => {
+  try {
+    // Access file as req.file
+    const file = req.file;
+    // Access other fields as req.body
+    const { orderID } = req.body;
+
+    // Now you can process or upload to ImageKit, etc.
+    const result = await ImageKitService.uploadImage(
+      file.buffer,
+      file.originalname,
+      `/order/${orderID}`
+    );
+
+    return res.sendSuccess({ orderID, filePath: result.filePath });
   } catch (ex) {
     console.log(ex);
     res.sendError(ex, utils.parseErrorString(ex));

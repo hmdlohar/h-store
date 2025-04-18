@@ -72,8 +72,7 @@ export default function OrderReviewAndPay() {
                   {c.label}:
                 </Typography>
                 <EcomImage
-                  src={typeof val === "string" ? val : undefined}
-                  path={typeof val === "string" ? undefined : undefined}
+                  path={val}
                   small
                   style={{ maxWidth: 100, borderRadius: 4 }}
                   alt={c.label}

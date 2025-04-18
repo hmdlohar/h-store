@@ -69,9 +69,10 @@ export default function AddCustomization() {
           return action.mutateAsync(values);
         }}
       >
-        {({ isSubmitting, isValid }) => (
+        {({ isSubmitting, isValid, values, errors }) => (
           <Form>
             {customizations.map((c) => {
+              // console.log(values, errors, "form");
               if (c.fieldType === "text")
                 return (
                   <TextCustomizationField

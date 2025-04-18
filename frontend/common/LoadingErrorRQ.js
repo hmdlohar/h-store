@@ -5,7 +5,7 @@ export default function LoadingErrorRQ({ q }) {
   return (
     <div>
       {q?.error && <Alert severity="error">{parseErrorString(q.error)}</Alert>}
-      {q?.isLoading && <LinearProgress />}
+      {(q?.isLoading || q?.isPending) && <LinearProgress />}
     </div>
   );
 }

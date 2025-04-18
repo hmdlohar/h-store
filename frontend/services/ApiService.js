@@ -13,4 +13,16 @@ export class ApiService {
     }
     return HttpServiceAxios[method](url, data, actualHeaders);
   }
+
+  static callWithFormData(path, formData) {
+    let actualHeaders = {
+      Authorization: LocalStorageUtils.lsGet("authToken"),
+      "Content-Type": "multipart/form-data",
+    };
+    return HttpServiceAxios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${path}`,
+      formData,
+      actualHeaders
+    );
+  }
 }
