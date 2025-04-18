@@ -2,8 +2,7 @@ const product = {
   name: "Couple Name (Two color)",
   slug: "couple-name-two-color",
   category: "Dual Name",
-  description:
-    `
+  description: `
     - Stunning Duo-Tone Design: Featuring two colors in the base plate, this personalized gift boasts a visually striking appearance, enhancing its beauty and making it an ideal choice for any occasion.
     - Personalized 3D Flip Name Plate: Surprise your wife with a special gift featuring a 3D flip name plate customized with your names, perfect for birthdays, anniversaries, and wedding celebrations.
     - Symbolic Dual Name Plank 3D: Commemorate your years together with a dual name plank 3D, symbolizing your enduring love and commitment, perfect for anniversary celebrations.
@@ -14,23 +13,72 @@ const product = {
   mrp: 999,
   price: 350,
   mainImage: {
-    imagePath: "products/dual-name-two-color/43.png"
+    imagePath: "products/dual-name-two-color/43.png",
   },
+  customizations: [
+    {
+      fieldType: "text",
+      field: "name1",
+      label: "Enter Name 1",
+      required: true,
+      info: {
+        uppercase: true,
+      },
+    },
+    {
+      fieldType: "text",
+      field: "name2",
+      label: "Enter Name 2",
+      required: true,
+      info: {
+        uppercase: true,
+      },
+    },
+    {
+      fieldType: "color",
+      field: "color",
+      label: "Select Color",
+      options: [
+        {
+          code: "#000000",
+          name: "Black",
+        },
+        {
+          code: "#FFFFFF",
+          name: "White",
+        },
+        {
+          code: "#FF0000",
+          name: "Red",
+        },
+        {
+          code: "#C39BD3",
+          name: "Violet",
+        },
+      ],
+      required: true,
+    },
+  ],
   variants: {
     "6 Characters": {
       price: 399,
+      maxLength: 6,
     },
     "7 Characters": {
       price: 449,
+      maxLength: 7,
     },
     "8 Characters": {
       price: 529,
+      maxLength: 8,
     },
     "9 Characters": {
       price: 589,
+      maxLength: 9,
     },
     "10 Characters": {
       price: 649,
+      maxLength: 10,
     },
   },
   images: [

@@ -14,6 +14,15 @@ const theme = createTheme({
     // You can add more color variations as needed, e.g., light, dark, contrastText
   },
   // You can also customize typography, spacing, and other theme options here
+
+  components: {
+    MuiTextField: {
+      defaultProps: {
+        variant: "outlined",
+        size: "small",
+      },
+    },
+  },
 });
 
 export default theme;

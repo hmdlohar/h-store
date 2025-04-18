@@ -5,7 +5,8 @@ const config = {
   APP_ROOT_URL,
   MONGO_URI,
   JWT_TOKEN,
-  PUBLIC_ROUTES:["/public"]
-}
+  MSG91_AUTH_KEY: process.env.MSG91_AUTH_KEY || "",
+  PUBLIC_ROUTES: ["/public"],
+};
 
 module.exports = config;

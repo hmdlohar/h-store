@@ -1,9 +1,8 @@
- const product = {
+const product = {
   name: "Customized Photo Moon Lamp",
   slug: "customized-photo-moon-lamp",
   category: "Lamps",
-  description:
-    `
+  description: `
   - Custom Photo Engraving – Upload a picture of your loved ones, and we’ll turn it into a beautiful glowing memory on this 3D moon lamp.
   - Unique Gift Idea – Surprise your partner, friends, or family with a heartfelt and creative gift that stands out.
   - 3D Printed for Realistic Texture – Crafted using advanced 3D printing technology to mimic the surface of the moon, adding a touch of cosmic charm to any room.
@@ -15,8 +14,19 @@
   mrp: 999,
   price: 699,
   mainImage: {
-    imagePath: "products/moon-lamp/MainImage.png"
+    imagePath: "products/moon-lamp/MainImage.png",
   },
+  customizations: [
+    {
+      fieldType: "image",
+      field: "image",
+      label: "Upload Image",
+      required: true,
+      imageOptions: {
+        aspectRatio: 1,
+      },
+    },
+  ],
   images: [
     {
       imagePath: "products/moon-lamp/SideLight.jpg",

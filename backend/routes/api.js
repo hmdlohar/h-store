@@ -9,6 +9,8 @@ router.use(commonMw);
 router.use("/public",public);
 router.use('/products', require('./product'));
 router.use(jwtService.jwt_MW);
+router.use('/user', require('./user'));
+router.use('/order', require('./order'));
 
 router.get("/",(req,res)=>{
   return res.send("Router is working.");

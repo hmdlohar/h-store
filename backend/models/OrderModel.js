@@ -17,6 +17,12 @@ var ProductSchema = new mongoose.Schema({
         type: String,
         required: true,
       },
+      variant: {
+        type: String,
+      },
+      customization: {
+        type: Object,
+      },
       quantity: {
         type: Number,
         required: true,
@@ -34,6 +40,12 @@ var ProductSchema = new mongoose.Schema({
       },
     },
   ],
+  deliveryAddress: Object,
+  billingAddress: Object,
+  status: {
+    type: String,
+    default: "pending",
+  },
   subTotal: {
     type: Number,
     required: true,
@@ -49,7 +61,11 @@ var ProductSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  info: {
+    type: Object,
+    default: {},
+  },
 });
 
 //console.log(ProductSchema.statics);
-module.exports = mongoose.model("Product", ProductSchema);
+module.exports = mongoose.model("Order", ProductSchema);

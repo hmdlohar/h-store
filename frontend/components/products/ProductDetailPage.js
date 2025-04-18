@@ -101,7 +101,7 @@ const ProductDetailPage = ({ product }) => {
 
       {/* Mobile Buy Now Action - Sticky at bottom */}
       <Box display={{ xs: "block", md: "none" }}>
-        <AddToCartAction onClick={() => {}} />
+        <AddToCartAction product={product} />
       </Box>
 
       {/* Recently Viewed Placeholder */}

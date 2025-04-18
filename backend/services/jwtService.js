@@ -1,22 +1,22 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config');
+const jwt = require("jsonwebtoken");
+const config = require("../config");
 
 function verifyToken(token) {
   return new Promise((resolve, reject) => {
     jwt.verify(token, config.JWT_TOKEN, (err, decodedToken) => {
       if (err || !decodedToken) {
-        return reject(err)
+        return reject(err);
       }
 
-      resolve(decodedToken)
-    })
-  })
+      resolve(decodedToken);
+    });
+  });
 }
 
 function jwt_MW(req, res, next) {
   for (let route of config.PUBLIC_ROUTES) {
     if (req.url.startsWith(route)) {
-      next()
+      next();
       return;
     }
   }
@@ -31,21 +31,23 @@ function jwt_MW(req, res, next) {
   verifyToken(token)
     .then((decodedToken) => {
       req.userData = decodedToken;
-      next()
+      next();
     })
     .catch((err) => {
       res.sendError("userNotLogged", "Invalid auth token provided.");
-    })
+    });
 }
 
 async function authenticate(user) {
-  var newUser = user;
+  var newUser = {};
   newUser._id = user._id;
   newUser.role = user.role;
   newUser.username = user.username;
-  const token = jwt.sign({ user: newUser }, config.JWT_TOKEN);
+  newUser.mobile = user.mobile;
+
+  delete newUser.password;
+  const token = jwt.sign(newUser, config.JWT_TOKEN);
   return token;
 }
-
 
 module.exports = { jwt_MW, verifyToken, authenticate };

@@ -1,10 +1,10 @@
-import CategoryList from "./CategoryList";
+import { Container } from "@mui/system";
+import ProductList from "../products/ProductsPage";
 
 export default function HomePage() {
   return (
-    <div>
-      Home page
-      <CategoryList />
-    </div>
+    <Container>
+      <ProductList />
+    </Container>
   );
 }

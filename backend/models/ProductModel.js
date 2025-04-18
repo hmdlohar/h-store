@@ -7,6 +7,31 @@ var ProductSchema = new mongoose.Schema({
       return new mongoose.Types.ObjectId();
     },
   },
+  variants: {
+    type: Object,
+    default: {},
+  },
+  customizations: [
+    {
+      fieldType: String, // text, color, image
+      field: String, // Identifier
+      label: String, // Label displayed to customer
+      required: Boolean,
+      options: [
+        {
+          code: String,
+          name: String,
+        },
+      ],
+      info: Object,
+      /* Image Options
+      {
+        aspectRatio: Number,
+      }
+      */
+      imageOptions: Object,
+    },
+  ],
   name: {
     type: String,
     required: true,
