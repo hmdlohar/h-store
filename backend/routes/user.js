@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    res.sendSuccess(req.userData, "User data fetched successfully");
+    res.sendSuccess(req.user, "User data fetched successfully");
   } catch (ex) {
     res.sendError(ex, Utils.parseErrorString(ex));
   }

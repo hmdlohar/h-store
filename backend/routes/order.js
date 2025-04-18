@@ -11,6 +11,7 @@ const upload = multer({ storage: multer.memoryStorage() }); // or diskStorage
 router.post("/", async (req, res) => {
   try {
     let order = new OrderModel(setSubTotal(req.body));
+    order.userID = req.user._id;
     await order.save();
     return res.sendSuccess(order, "Order Created Successfully");
   } catch (ex) {
@@ -100,6 +101,23 @@ router.post("/upload-image", upload.single("file"), async (req, res) => {
     return res.sendSuccess({ orderID, filePath: result.filePath });
   } catch (ex) {
     console.log(ex);
+    res.sendError(ex, utils.parseErrorString(ex));
+  }
+});
+
+// Create Cashfree order for payment
+router.post("/create-cashfree-order", async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) throw new Error("orderId is required");
+    const order = await OrderModel.findById(orderId);
+    if (!order) throw new Error("Order not found");
+    // Calculate total amount (use your logic if needed)
+    order.amount = order.finalAmount || order.amount || order.total || 1;
+    const result =
+      await require("../services/CashfreeUtils").createCashfreeOrder(order);
+    res.sendSuccess(result);
+  } catch (ex) {
     res.sendError(ex, utils.parseErrorString(ex));
   }
 });

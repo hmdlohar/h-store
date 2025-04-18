@@ -1,6 +1,10 @@
+import React from "react";
+import { useRouter } from "next/navigation";
+import { ApiService } from "@/services/ApiService";
 import { useOrderStore } from "@/store/orderStore";
 import { Box, Typography, Divider, Button, Grid, Chip } from "@mui/material";
 import EcomImage from "@/common/EcomImage";
+import { launchCashfreePayment } from "@/utils/cashfree";
 
 function prettyPrice(amount) {
   return `₹${Number(amount).toLocaleString("en-IN")}`;
@@ -22,6 +26,35 @@ export default function OrderReviewAndPay() {
 
   // Delivery address
   const address = order.deliveryAddress || {};
+
+  // Payment state
+  const [paying, setPaying] = React.useState(false);
+  const [payError, setPayError] = React.useState("");
+  const router = useRouter ? useRouter() : null;
+  // Payment handler
+  async function handlePay() {
+    setPayError("");
+    setPaying(true);
+    try {
+      // Call backend to create cashfree order
+      const res = await ApiService.call(
+        "/api/order/create-cashfree-order",
+        "post",
+        { orderId: order._id }
+      );
+      const data = res.data?.data;
+      console.log(data, "data");
+      const paymentResult = await launchCashfreePayment(
+        data.payment_session_id
+      );
+      // After payment, Cashfree will redirect to returnUrl
+      // No need to manually redirect here
+    } catch (ex) {
+      setPayError(ex?.message || "Payment failed. Please try again.");
+    } finally {
+      setPaying(false);
+    }
+  }
 
   return (
     <Box maxWidth={480} mx="auto" mt={4} p={2}>
@@ -143,9 +176,21 @@ export default function OrderReviewAndPay() {
         details once payment is successful.
       </Typography>
 
-      <Button variant="contained" color="primary" size="large" fullWidth>
-        Complete The order
+      <Button
+        variant="contained"
+        color="primary"
+        size="large"
+        fullWidth
+        disabled={paying}
+        onClick={handlePay}
+      >
+        {paying ? "Processing..." : "Complete The order"}
       </Button>
+      {payError && (
+        <Typography color="error" mt={2} textAlign="center">
+          {payError}
+        </Typography>
+      )}
     </Box>
   );
 }

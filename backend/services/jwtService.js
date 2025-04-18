@@ -30,7 +30,7 @@ function jwt_MW(req, res, next) {
   }
   verifyToken(token)
     .then((decodedToken) => {
-      req.userData = decodedToken;
+      req.user = decodedToken;
       next();
     })
     .catch((err) => {

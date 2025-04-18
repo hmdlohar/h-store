@@ -65,6 +65,10 @@ var ProductSchema = new mongoose.Schema({
     type: Object,
     default: {},
   },
+  userID: {
+    type: String,
+    required: true,
+  },
 });
 
 //console.log(ProductSchema.statics);

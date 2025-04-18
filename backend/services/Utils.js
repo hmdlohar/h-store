@@ -1,13 +1,16 @@
 const fs = require("fs");
 class Utils {
   parseErrorString(error) {
-    if (typeof error === 'string') {
+    if (typeof error === "string") {
       return error;
     }
-    if (typeof error.Error === 'string') {
+    if (typeof error?.response?.data?.message === "string") {
+      return error.response.data.message;
+    }
+    if (typeof error.Error === "string") {
       return error.Error;
     }
-    if (typeof error.Message === 'string') {
+    if (typeof error.Message === "string") {
       return error.Message;
     }
     return error.toString();
@@ -33,8 +36,8 @@ class Utils {
     let dateMatch = {
       date: {
         $gte: new Date(0),
-        $lt: new Date()
-      }
+        $lt: new Date(),
+      },
     };
     if (req.query.fromDate) {
       dateMatch.date.$gte = this.floorDate(req.query.fromDate);
@@ -63,18 +66,15 @@ class Utils {
   }
 
   fnSaveBase64ImageAsFile(imageURI, targetPath) {
-
     return new Promise((resolve, reject) => {
       var base64 = imageURI.replace(/^data:image\/.+;base64,/, "");
-      fs.writeFile(targetPath, base64, 'base64', function (err) {
-        if (err)
-          reject(err);
+      fs.writeFile(targetPath, base64, "base64", function (err) {
+        if (err) reject(err);
 
         resolve();
       });
     });
   }
-
 }
 
 const utils = new Utils();
