@@ -1,7 +1,7 @@
 import { useOrderStore } from "@/store/orderStore";
 import { useCommonStore } from "@/store/commonStore";
 import { useState } from "react";
-import { Formik, Form } from "formik";
+import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Box, TextField, Button, Typography } from "@mui/material";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -43,6 +43,21 @@ export default function GetAddress() {
   const { user } = useCommonStore();
   const userMobile = user && user.mobile ? user.mobile : "";
 
+  const existingAddress = useQuery({
+    queryKey: ["existing-address", order._id],
+    queryFn: async () => {
+      const res = await ApiService.call(
+        `/api/user/get-existing-address`,
+        "get"
+      );
+
+      if (res) {
+        formik.setValues(res);
+      }
+      return res;
+    },
+  });
+
   const action = useMutation({
     mutationFn: async (values) => {
       const response = await ApiService.call(
@@ -50,186 +65,189 @@ export default function GetAddress() {
         "put",
         values
       );
-      setOrder(response.data?.data);
+      setOrder(response);
       setStep(3);
-      return response.data?.data;
+      return response;
     },
   });
+
+  const formik = useFormik({
+    initialValues: {
+      name: order?.deliveryAddress?.name || "",
+      mobile: order?.deliveryAddress?.mobile || userMobile?.substring(2, 12),
+      pincode: order?.deliveryAddress?.pincode || "",
+      city: order?.deliveryAddress?.city || "",
+      state: order?.deliveryAddress?.state || "",
+      home: order?.deliveryAddress?.home || "",
+      area: order?.deliveryAddress?.area || "",
+    },
+    validationSchema: AddressSchema,
+    onSubmit: (values) => {
+      return action.mutateAsync(values);
+    },
+  });
+
+  // React Query for pincode lookup
+  const {
+    data: pinData,
+    error: pinQueryError,
+    isLoading: pinLoading,
+    isSuccess: pinSuccess,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ["pincode", formik.values.pincode],
+    queryFn: () => fetchPinInfo(formik.values.pincode),
+    enabled: formik.values.pincode.length === 6,
+    staleTime: 1000 * 60 * 10,
+    retry: false,
+  });
+
+  // Autofill city/state when pinData changes
+  if (
+    pinSuccess &&
+    pinData &&
+    (formik.values.city !== pinData.city ||
+      formik.values.state !== pinData.state)
+  ) {
+    formik.setFieldValue("city", pinData.city, false);
+    formik.setFieldValue("state", pinData.state, false);
+  }
+  if (
+    (!pinSuccess || pinQueryError) &&
+    (formik.values.city || formik.values.state)
+  ) {
+    formik.setFieldValue("city", "", false);
+    formik.setFieldValue("state", "", false);
+  }
 
   return (
     <Box maxWidth={400} mx="auto" mt={4}>
       <Typography variant="h6" mb={2}>
         Delivery Address
       </Typography>
-      <Formik
-        initialValues={{
-          name: order?.deliveryAddress?.name || "",
-          mobile:
-            order?.deliveryAddress?.mobile || userMobile?.substring(2, 12),
-          pincode: order?.deliveryAddress?.pincode || "",
-          city: order?.deliveryAddress?.city || "",
-          state: order?.deliveryAddress?.state || "",
-          home: order?.deliveryAddress?.home || "",
-          area: order?.deliveryAddress?.area || "",
-        }}
-        validationSchema={AddressSchema}
-        onSubmit={(values) => {
-          return action.mutateAsync(values);
-        }}
-      >
-        {({ values, errors, touched, setFieldValue, isSubmitting }) => {
-          // React Query for pincode lookup
-          const {
-            data: pinData,
+      <form onSubmit={formik.handleSubmit} autoComplete="off">
+        <LoadingErrorRQ q={existingAddress} />
+        <TextField
+          name="pincode"
+          label="Pincode"
+          fullWidth
+          margin="dense"
+          value={formik.values.pincode}
+          onChange={(e) => {
+            const val = e.target.value.replace(/\D/g, "");
+            formik.setFieldValue("pincode", val);
+          }}
+          error={
+            Boolean(formik.touched.pincode && formik.errors.pincode) ||
+            !!pinQueryError
+          }
+          helperText={
+            (formik.touched.pincode && formik.errors.pincode) ||
+            (pinQueryError && formik.values.pincode.length === 6
+              ? pinQueryError.message
+              : " ")
+          }
+          inputProps={{ maxLength: 6 }}
+        />
+        <LoadingErrorRQ
+          q={{
             error: pinQueryError,
-            isLoading: pinLoading,
-            isSuccess: pinSuccess,
-            refetch,
-            isFetching,
-          } = useQuery({
-            queryKey: ["pincode", values.pincode],
-            queryFn: () => fetchPinInfo(values.pincode),
-            enabled: values.pincode.length === 6,
-            staleTime: 1000 * 60 * 10,
-            retry: false,
-          });
+            isLoading: pinLoading || isFetching,
+          }}
+        />
+        {pinSuccess && pinData && (
+          <>
+            <TextField
+              name="city"
+              label="City"
+              fullWidth
+              margin="dense"
+              value={pinData.city}
+              InputProps={{ readOnly: true }}
+            />
+            <TextField
+              name="state"
+              label="State"
+              fullWidth
+              margin="dense"
+              value={pinData.state}
+              InputProps={{ readOnly: true }}
+            />
+            <TextField
+              name="country"
+              label="Country"
+              fullWidth
+              margin="dense"
+              value="India"
+              InputProps={{ readOnly: true }}
+            />
+          </>
+        )}
+        {pinSuccess && pinData && (
+          <>
+            <TextField
+              name="home"
+              label="Home / Flat / House No."
+              fullWidth
+              margin="dense"
+              value={formik.values.home}
+              onChange={formik.handleChange}
+              error={Boolean(formik.touched.home && formik.errors.home)}
+              helperText={formik.touched.home && formik.errors.home}
+            />
+            <TextField
+              name="area"
+              label="Area / Landmark"
+              fullWidth
+              margin="dense"
+              value={formik.values.area}
+              onChange={formik.handleChange}
+              error={Boolean(formik.touched.area && formik.errors.area)}
+              helperText={formik.touched.area && formik.errors.area}
+            />
 
-          // Autofill city/state when pinData changes
-          if (
-            pinSuccess &&
-            pinData &&
-            (values.city !== pinData.city || values.state !== pinData.state)
-          ) {
-            setFieldValue("city", pinData.city, false);
-            setFieldValue("state", pinData.state, false);
-          }
-          if ((!pinSuccess || pinQueryError) && (values.city || values.state)) {
-            setFieldValue("city", "", false);
-            setFieldValue("state", "", false);
-          }
-
-          return (
-            <Form autoComplete="off">
-              <TextField
-                name="pincode"
-                label="Pincode"
+            <TextField
+              name="name"
+              label="Recipient Name"
+              fullWidth
+              margin="dense"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              error={Boolean(formik.touched.name && formik.errors.name)}
+              helperText={formik.touched.name && formik.errors.name}
+            />
+            <TextField
+              name="mobile"
+              label="Mobile Number"
+              fullWidth
+              margin="dense"
+              value={formik.values.mobile}
+              onChange={(e) =>
+                formik.setFieldValue(
+                  "mobile",
+                  e.target.value.replace(/\D/g, "")
+                )
+              }
+              error={Boolean(formik.touched.mobile && formik.errors.mobile)}
+              helperText={formik.touched.mobile && formik.errors.mobile}
+              inputProps={{ maxLength: 10 }}
+            />
+            <LoadingErrorRQ q={action} />
+            <Box mt={2}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
                 fullWidth
-                margin="dense"
-                value={values.pincode}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "");
-                  setFieldValue("pincode", val);
-                }}
-                error={
-                  Boolean(touched.pincode && errors.pincode) || !!pinQueryError
-                }
-                helperText={
-                  (touched.pincode && errors.pincode) ||
-                  (pinQueryError && values.pincode.length === 6
-                    ? pinQueryError.message
-                    : " ")
-                }
-                inputProps={{ maxLength: 6 }}
-              />
-              <LoadingErrorRQ
-                q={{
-                  error: pinQueryError,
-                  isLoading: pinLoading || isFetching,
-                }}
-              />
-              {pinSuccess && pinData && (
-                <>
-                  <TextField
-                    name="city"
-                    label="City"
-                    fullWidth
-                    margin="dense"
-                    value={pinData.city}
-                    InputProps={{ readOnly: true }}
-                  />
-                  <TextField
-                    name="state"
-                    label="State"
-                    fullWidth
-                    margin="dense"
-                    value={pinData.state}
-                    InputProps={{ readOnly: true }}
-                  />
-                  <TextField
-                    name="country"
-                    label="Country"
-                    fullWidth
-                    margin="dense"
-                    value="India"
-                    InputProps={{ readOnly: true }}
-                  />
-                </>
-              )}
-              {/* Show rest of address fields only if city/state are filled */}
-              {pinSuccess && pinData && (
-                <>
-                  <TextField
-                    name="home"
-                    label="Home / Flat / House No."
-                    fullWidth
-                    margin="dense"
-                    value={values.home}
-                    onChange={(e) => setFieldValue("home", e.target.value)}
-                    error={Boolean(touched.home && errors.home)}
-                    helperText={touched.home && errors.home}
-                  />
-                  <TextField
-                    name="area"
-                    label="Area / Landmark"
-                    fullWidth
-                    margin="dense"
-                    value={values.area}
-                    onChange={(e) => setFieldValue("area", e.target.value)}
-                    error={Boolean(touched.area && errors.area)}
-                    helperText={touched.area && errors.area}
-                  />
-
-                  <TextField
-                    name="name"
-                    label="Recipient Name"
-                    fullWidth
-                    margin="dense"
-                    value={values.name}
-                    onChange={(e) => setFieldValue("name", e.target.value)}
-                    error={Boolean(touched.name && errors.name)}
-                    helperText={touched.name && errors.name}
-                  />
-                  <TextField
-                    name="mobile"
-                    label="Mobile Number"
-                    fullWidth
-                    margin="dense"
-                    value={values.mobile}
-                    onChange={(e) =>
-                      setFieldValue("mobile", e.target.value.replace(/\D/g, ""))
-                    }
-                    error={Boolean(touched.mobile && errors.mobile)}
-                    helperText={touched.mobile && errors.mobile}
-                    inputProps={{ maxLength: 10 }}
-                  />
-                  <LoadingErrorRQ q={action} />
-                  <Box mt={2}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      disabled={isSubmitting}
-                    >
-                      Next
-                    </Button>
-                  </Box>
-                </>
-              )}
-            </Form>
-          );
-        }}
-      </Formik>
+                disabled={formik.isSubmitting}
+              >
+                Next
+              </Button>
+            </Box>
+          </>
+        )}
+      </form>
     </Box>
   );
 }

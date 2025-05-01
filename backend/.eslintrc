@@ -1,0 +1,42 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2022": true  // Updated to es2022 to support modern features
+  },
+  "plugins": ["node"],
+  "extends": ["eslint:recommended", "plugin:node/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2022  // Updated to 2022 to support optional chaining
+  },
+
+  "rules": {
+    // Error prevention
+    "no-undef": "error",
+    "no-unused-vars": "warn",
+    "no-unreachable": "error",
+
+    // Node.js specific
+    "node/no-deprecated-api": "error",
+    "node/no-missing-require": "error",
+    "node/no-unpublished-require": "off",
+    "no-path-concat": "error", // Use path.join() instead of string concatenation
+    "handle-callback-err": "error", // Enforce error handling in callbacks
+    "no-buffer-constructor": "error", // Disallow use of Buffer() constructor
+    "no-sync": "warn", // Warn about synchronous methods
+
+    // Code style
+    "no-console": "off", // Allow console.log for debugging
+    "prefer-const": "off", // Don't force using const
+    "no-var": "off", // Allow var if needed
+
+    // Best practices
+    "eqeqeq": "warn", // Warn about == instead of ===
+    "no-return-await": "warn", // Warn about unnecessary return await
+    "no-throw-literal": "error", // Only throw Error objects
+
+    // Express specific
+    "no-process-exit": "error", // Don't use process.exit() directly
+    "no-process-env": "off" // Allow process.env access
+  }
+}

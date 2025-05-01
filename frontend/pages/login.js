@@ -6,7 +6,7 @@ export default function Login() {
   return (
     <>
       <Head>
-        <body></body>
+        <title>Login</title>
       </Head>
       <MainLayout>
         <AuthGuard>Hi i am not here</AuthGuard>

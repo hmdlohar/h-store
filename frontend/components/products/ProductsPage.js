@@ -25,7 +25,7 @@ const ProductList = () => {
       try {
         const response = await ApiService.call("/api/products");
         console.log("Response:", response);
-        const data = response?.data?.data;
+        const data = response;
         setProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);

@@ -6,9 +6,6 @@ import { useOrderStore } from "@/store/orderStore";
 import { useRouter } from "next/router";
 
 const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [open, setOpen] = React.useState(false);
   const router = useRouter();
   const { reset, setProduct, order } = useOrderStore();
 
@@ -52,13 +49,6 @@ const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
       >
         {label}
       </Button>
-      {open && (
-        <BuyNowModal
-          product={product}
-          open={open}
-          onClose={() => setOpen(false)}
-        />
-      )}
     </Box>
   );
 };

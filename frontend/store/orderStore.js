@@ -15,6 +15,9 @@ export const useOrderStore = create(
       setOrder: (order) => set({ order }),
       setStep: (step) => set({ step }),
       setProduct: (product) => set({ product }),
+      resetOrder: () => {
+        set({ order: null, step: 1, product: null });
+      },
     }),
     {
       name: "order-storage",

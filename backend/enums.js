@@ -1,7 +1,10 @@
 module.exports = {
-  ACCOUNT_TYPE:{
-    PERSONAL:"PERSONAL",
-    PNL:"PNL",
-    NOMINAL:"NOMINAL",
-  }
-}
+  ORDER_STATUS: {
+    PENDING: "pending",
+    PAID: "paid",
+    PROCESSING: "processing",
+    SHIPPED: "shipped",
+    DELIVERED: "delivered",
+    CANCELLED: "cancelled",
+  },
+};

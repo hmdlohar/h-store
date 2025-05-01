@@ -1,17 +1,24 @@
 import { HttpServiceAxios, LocalStorageUtils } from "hyper-utils";
 
 export class ApiService {
-  static call(path, method = "get", data = {}, headers = {}) {
+  static async call(path, method = "get", data = {}, headers = {}) {
     let actualHeaders = {
       Authorization: LocalStorageUtils.lsGet("authToken"),
       ...headers,
     };
 
     let url = `${process.env.NEXT_PUBLIC_BACKEND_URL}${path}`;
+    let result;
     if (method === "get") {
-      return HttpServiceAxios.get(url, actualHeaders);
+      result = await HttpServiceAxios.get(url, actualHeaders);
+    } else {
+      result = await HttpServiceAxios[method](url, data, actualHeaders);
     }
-    return HttpServiceAxios[method](url, data, actualHeaders);
+    if (headers?.raw) {
+      return result;
+    }
+
+    return result?.data?.data;
   }
 
   static callWithFormData(path, formData) {

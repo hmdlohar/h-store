@@ -6,6 +6,7 @@ const { setSubTotal } = require("../util/orderUtils");
 const ProductModel = require("../models/ProductModel");
 const ImageKitService = require("../services/ImageKitService");
 const multer = require("multer");
+const enums = require("../enums");
 const upload = multer({ storage: multer.memoryStorage() }); // or diskStorage
 
 router.post("/", async (req, res) => {
@@ -116,7 +117,93 @@ router.post("/create-cashfree-order", async (req, res) => {
     order.amount = order.finalAmount || order.amount || order.total || 1;
     const result =
       await require("../services/CashfreeUtils").createCashfreeOrder(order);
+
+    console.log(result, "result");
+
+    order.set("pg", "cashfree");
+    order.set("pgOrderID", result.order_id);
+
+    await order.save();
     res.sendSuccess(result);
+  } catch (ex) {
+    res.sendError(ex, utils.parseErrorString(ex));
+  }
+});
+
+router.post("/verify-cashfree-order", async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const order = await OrderModel.findById(orderId);
+    if (!order) throw new Error("Order not found");
+    const result = await require("../services/CashfreeUtils").getCashfreeOrder(
+      order.pgOrderID
+    );
+
+    if (result?.order_status !== "PAID") {
+      throw new Error("Order not paid");
+    }
+    order.set("status", enums.ORDER_STATUS.PAID);
+    await order.save();
+    return res.sendSuccess(order, "Order paid successfully");
+  } catch (ex) {
+    res.sendError(ex, utils.parseErrorString(ex));
+  }
+});
+
+// router.get("/:orderID", async (req, res) => {
+//   try {
+//     const { orderID } = req.params;
+//     const order = await OrderModel.findOne({
+//       _id: orderID,
+//       userID: req.user._id,
+//     });
+//     if (!order) {
+//       return res.sendError("orderNotFound", "Order not found");
+//     }
+//     res.sendSuccess(order);
+//   } catch (ex) {
+//     res.sendError(ex, utils.parseErrorString(ex));
+//   }
+// });
+
+router.get("/:orderID?", async (req, res) => {
+  try {
+    const orders = await OrderModel.aggregate([
+      { $match: { userID: req.user._id } },
+
+      { $unwind: "$items" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.productId",
+          foreignField: "_id",
+          pipeline: [
+            {
+              $project: {
+                mainImage: 1,
+                name: 1,
+              },
+            },
+          ],
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      {
+        $group: {
+          _id: "$_id",
+          userID: { $first: "$userID" },
+          status: { $first: "$status" },
+          amount: { $first: "$amount" },
+          createdAt: { $first: "$createdAt" },
+          orderNumber: { $first: "$orderNumber" },
+          items: { $push: "$items" },
+          product: { $first: "$product" },
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
+    res.sendSuccess(orders);
   } catch (ex) {
     res.sendError(ex, utils.parseErrorString(ex));
   }

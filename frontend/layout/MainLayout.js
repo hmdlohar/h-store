@@ -54,14 +54,7 @@ const MainLayout = ({ children }) => {
             >
               Products
             </Button>
-            <Button
-              color="inherit"
-              component={NextLink}
-              href="/about"
-              sx={{ textTransform: "none" }}
-            >
-              About Us
-            </Button>
+
             <Button
               color="inherit"
               component={NextLink}
@@ -74,14 +67,8 @@ const MainLayout = ({ children }) => {
 
           {/* Icons */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <IconButton color="inherit">
-              <SearchIcon />
-            </IconButton>
-            <IconButton color="inherit">
+            <IconButton component={NextLink} href="/profile" color="inherit">
               <PersonIcon />
-            </IconButton>
-            <IconButton color="inherit">
-              <ShoppingCartIcon />
             </IconButton>
           </Box>
         </Toolbar>

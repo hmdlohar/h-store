@@ -9,14 +9,6 @@ import { useMutation } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 
-function getInitialValues(customizations) {
-  const initial = {};
-  customizations.forEach((c) => {
-    initial[c.field] = c.fieldType === "image" ? null : "";
-  });
-  return initial;
-}
-
 export default function AddCustomization() {
   const { order, product, setOrder, setStep } = useOrderStore();
   const customizations = product?.customizations || [];
@@ -27,9 +19,9 @@ export default function AddCustomization() {
         "put",
         values
       );
-      setOrder(response.data?.data);
+      setOrder(response);
       setStep(2);
-      return response.data?.data;
+      return response;
     },
   });
 
@@ -111,7 +103,7 @@ export default function AddCustomization() {
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={isSubmitting || !isValid}
+                disabled={isSubmitting}
                 fullWidth
               >
                 Next

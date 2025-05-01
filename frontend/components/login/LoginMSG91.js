@@ -48,7 +48,7 @@ const LoginMSG91 = () => {
       if (!user) {
         ApiService.call("/api/user")
           .then((res) => {
-            useCommonStore.getState().setUser(res.data?.data);
+            useCommonStore.getState().setUser(res);
           })
           .catch((error) => {
             console.log("error", error);
@@ -68,7 +68,7 @@ const LoginMSG91 = () => {
             }
           );
           console.log("response", response);
-          useCommonStore.getState().setLogin(response.data?.data);
+          useCommonStore.getState().setLogin(response);
         })
         .catch((error) => {
           console.log("error", error);

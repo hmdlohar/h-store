@@ -9,8 +9,7 @@ import { useRouter } from "next/router";
 export const getServerSideProps = async ({ query }) => {
   const { slug } = query;
 
-  const response = await ApiService.call(`/api/products/${slug}`);
-  const product = response?.data?.data;
+  const product = await ApiService.call(`/api/products/${slug}`);
 
   return {
     props: {

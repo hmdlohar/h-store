@@ -1,11 +1,13 @@
 export default function EcomImage(props) {
+  const { thumbnail, small, path, ...rest } = props;
   let tr = "";
-  if (props.thumbnail) {
+  if (thumbnail) {
     tr = "tr=w-300";
-  }
-  else if (props.small) {
+  } else if (small) {
     tr = "tr=w-100";
   }
-  let src = props.path?`https://ik.imagekit.io/id4vmvhgeh/${props.path}?1=1&${tr}`:props.src;
-  return <img {...props} src={src} />;
+  let src = path
+    ? `https://ik.imagekit.io/id4vmvhgeh/${path}?1=1&${tr}`
+    : props.src;
+  return <img {...rest} src={src} />;
 }

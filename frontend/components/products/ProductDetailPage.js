@@ -86,14 +86,7 @@ const ProductDetailPage = ({ product }) => {
               mt={3}
               sx={{ marginTop: "auto", pt: 3 }}
             >
-              <Button
-                variant="contained"
-                fullWidth
-                size="large"
-                onClick={() => {}}
-              >
-                Buy Now
-              </Button>
+              <AddToCartAction product={product} />
             </Box>
           </Box>
         </Grid>

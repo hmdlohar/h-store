@@ -5,14 +5,30 @@ import { useOrderStore } from "@/store/orderStore";
 import { Box, Typography, Divider, Button, Grid, Chip } from "@mui/material";
 import EcomImage from "@/common/EcomImage";
 import { launchCashfreePayment } from "@/utils/cashfree";
+import { useMutation } from "@tanstack/react-query";
+import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 
 function prettyPrice(amount) {
   return `₹${Number(amount).toLocaleString("en-IN")}`;
 }
 
 export default function OrderReviewAndPay() {
-  const { order, product } = useOrderStore();
-  if (!order || !product) return null;
+  const { order, product, resetOrder } = useOrderStore();
+
+  const actionVerifyCashfreeOrder = useMutation({
+    mutationFn: async () => {
+      const res = await ApiService.call(
+        "/api/order/verify-cashfree-order",
+        "post",
+        { orderId: order._id }
+      );
+      router.push(`/order-success/${order._id}`);
+      setTimeout(() => {
+        resetOrder();
+      }, 1000);
+      return res;
+    },
+  });
 
   // Get price, tax, total
   const item = order.items?.[0] || {};
@@ -30,7 +46,7 @@ export default function OrderReviewAndPay() {
   // Payment state
   const [paying, setPaying] = React.useState(false);
   const [payError, setPayError] = React.useState("");
-  const router = useRouter ? useRouter() : null;
+  const router = useRouter();
   // Payment handler
   async function handlePay() {
     setPayError("");
@@ -42,19 +58,23 @@ export default function OrderReviewAndPay() {
         "post",
         { orderId: order._id }
       );
-      const data = res.data?.data;
+      const data = res;
       console.log(data, "data");
       const paymentResult = await launchCashfreePayment(
         data.payment_session_id
       );
-      // After payment, Cashfree will redirect to returnUrl
-      // No need to manually redirect here
+      console.log(paymentResult, "paymentResult");
+
+      const result = await actionVerifyCashfreeOrder.mutateAsync();
+      console.log(result, "result");
     } catch (ex) {
       setPayError(ex?.message || "Payment failed. Please try again.");
     } finally {
       setPaying(false);
     }
   }
+
+  if (!order || !product) return null;
 
   return (
     <Box maxWidth={480} mx="auto" mt={4} p={2}>
@@ -181,7 +201,7 @@ export default function OrderReviewAndPay() {
         color="primary"
         size="large"
         fullWidth
-        disabled={paying}
+        disabled={paying || actionVerifyCashfreeOrder.isPending}
         onClick={handlePay}
       >
         {paying ? "Processing..." : "Complete The order"}
@@ -191,6 +211,7 @@ export default function OrderReviewAndPay() {
           {payError}
         </Typography>
       )}
+      <LoadingErrorRQ query={actionVerifyCashfreeOrder} />
     </Box>
   );
 }

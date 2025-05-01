@@ -8,10 +8,11 @@ import { ApiService } from "@/services/ApiService";
 import SelectVariant from "./SelectVariant";
 import OrderReviewAndPay from "./OrderReviewAndPay";
 import { Container } from "@mui/material";
+import { useRouter } from "next/router";
 
 export default function OrderPage() {
   const { step, setStep, product, order, setOrder } = useOrderStore();
-
+  const router = useRouter();
   console.log({ order, product });
 
   const actionCreateOrder = useMutation({
@@ -27,40 +28,42 @@ export default function OrderPage() {
           },
         ],
       });
-      setOrder(response?.data?.data);
-      return response?.data?.data;
+      setOrder(response);
+      return response;
     },
   });
 
   useEffect(() => {
     if (product && !order) {
       actionCreateOrder.mutate();
+    } else if (!product) {
+      router.push("/");
     }
   }, []);
 
   const needToSelectVariant =
     Object.keys(product?.variants || {}).length > 0 && !order?.info?.variant;
 
-  console.log(needToSelectVariant, order?.info?.variant);
-
   return (
     <Container>
-      {(() => {
-        switch (step) {
-          case 1:
-            return needToSelectVariant ? (
-              <SelectVariant />
-            ) : (
-              <AddCustomization />
-            );
-          case 2:
-            return <GetAddress />;
-          case 3:
-            return <OrderReviewAndPay />;
-          default:
-            return <div>Something is wrong</div>;
-        }
-      })()}
+      {product &&
+        order &&
+        (() => {
+          switch (step) {
+            case 1:
+              return needToSelectVariant ? (
+                <SelectVariant />
+              ) : (
+                <AddCustomization />
+              );
+            case 2:
+              return <GetAddress />;
+            case 3:
+              return <OrderReviewAndPay />;
+            default:
+              return <div>Something is wrong</div>;
+          }
+        })()}
       <LoadingErrorRQ q={actionCreateOrder} />
     </Container>
   );

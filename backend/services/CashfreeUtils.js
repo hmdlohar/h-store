@@ -15,7 +15,6 @@ async function createCashfreeOrder(order) {
     const res = await axios.post(
       `${CASHFREE_BASE_URL}/orders`,
       {
-        order_id: order._id,
         order_amount: order.amount,
         order_currency: "INR",
         customer_details: {
@@ -24,17 +23,18 @@ async function createCashfreeOrder(order) {
           customer_phone: order.deliveryAddress?.mobile,
         },
         order_meta: {
-          return_url: `${process.env.APP_ROOT_URL}/order/payment-callback?order_id={order._id}`,
+          // return_url: `${process.env.APP_ROOT_URL}/order/payment-callback?order_id={order._id}`,
+          order_id: order._id,
         },
       },
       {
         headers: {
           "x-client-id": CASHFREE_CLIENT_ID,
           "x-client-secret": CASHFREE_CLIENT_SECRET,
-        "x-api-version": "2023-08-01",
-        "Content-Type": "application/json",
-      },
-    }
+          "x-api-version": "2023-08-01",
+          "Content-Type": "application/json",
+        },
+      }
     );
     return res.data;
   } catch (err) {
@@ -42,7 +42,8 @@ async function createCashfreeOrder(order) {
     if (
       err.response &&
       err.response.data &&
-      (err.response.data.message?.includes("already present") || err.response.data.message?.includes("already been used"))
+      (err.response.data.message?.includes("already present") ||
+        err.response.data.message?.includes("already been used"))
     ) {
       // Fetch existing order from Cashfree
       const getRes = await axios.get(
@@ -62,4 +63,16 @@ async function createCashfreeOrder(order) {
   }
 }
 
-module.exports = { createCashfreeOrder };
+async function getCashfreeOrder(orderId) {
+  const res = await axios.get(`${CASHFREE_BASE_URL}/orders/${orderId}`, {
+    headers: {
+      "x-client-id": CASHFREE_CLIENT_ID,
+      "x-client-secret": CASHFREE_CLIENT_SECRET,
+      "x-api-version": "2023-08-01",
+      "Content-Type": "application/json",
+    },
+  });
+  return res.data;
+}
+
+module.exports = { createCashfreeOrder, getCashfreeOrder };

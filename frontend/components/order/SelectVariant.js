@@ -27,8 +27,8 @@ export default function SelectVariant() {
         `/api/order/set-variant/${order._id}/${product._id}/${variant}`,
         "put"
       );
-      setOrder(response?.data?.data);
-      return response?.data?.data;
+      setOrder(response);
+      return response;
     },
   });
 

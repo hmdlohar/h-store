@@ -1,6 +1,8 @@
 const express = require("express");
-const UserModel = require("../models/UserModel");
+// const UserModel = require("../models/UserModel");
 const Utils = require("../services/Utils");
+const OrderModel = require("../models/OrderModel");
+const utils = require("../services/Utils");
 
 const router = express.Router();
 
@@ -12,12 +14,15 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.get("/get-existing-address", async (req, res) => {
   try {
-    let objAccount = new AccountModel(req.body);
-    await objAccount.save();
+    const order = await OrderModel.findOne({
+      userID: req.user._id,
+    });
+
+    res.sendSuccess(order?.deliveryAddress || null);
   } catch (ex) {
-    res.sendError(ex, Utils.parseErrorString(ex));
+    res.sendError(ex, utils.parseErrorString(ex));
   }
 });
 
