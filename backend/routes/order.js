@@ -169,7 +169,12 @@ router.post("/verify-cashfree-order", async (req, res) => {
 router.get("/:orderID?", async (req, res) => {
   try {
     const orders = await OrderModel.aggregate([
-      { $match: { userID: req.user._id } },
+      {
+        $match: {
+          userID: req.user._id,
+          ...(req.params.orderID && { _id: req.params.orderID }),
+        },
+      },
 
       { $unwind: "$items" },
       {
@@ -182,6 +187,7 @@ router.get("/:orderID?", async (req, res) => {
               $project: {
                 mainImage: 1,
                 name: 1,
+                customizations: 1,
               },
             },
           ],
@@ -195,6 +201,9 @@ router.get("/:orderID?", async (req, res) => {
           userID: { $first: "$userID" },
           status: { $first: "$status" },
           amount: { $first: "$amount" },
+          deliveryAddress: { $first: "$deliveryAddress" },
+          pg: { $first: "$pg" },
+          pgOrderID: { $first: "$pgOrderID" },
           createdAt: { $first: "$createdAt" },
           orderNumber: { $first: "$orderNumber" },
           items: { $push: "$items" },
@@ -203,7 +212,14 @@ router.get("/:orderID?", async (req, res) => {
       },
       { $sort: { createdAt: -1 } },
     ]);
-    res.sendSuccess(orders);
+    if (req.params.orderID) {
+      if (orders.length === 0) {
+        return res.sendError("orderNotFound", "Order not found");
+      }
+      res.sendSuccess(orders[0]);
+    } else {
+      res.sendSuccess(orders);
+    }
   } catch (ex) {
     res.sendError(ex, utils.parseErrorString(ex));
   }
