@@ -3,7 +3,7 @@ import HomePage from "@/components/index/HomePage";
 import MainLayout from "@/layout/MainLayout";
 import { ApiService } from "@/services/ApiService";
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   const res = await ApiService.call("/api/public/home-page-config", "get");
   return {
     props: { homePageConfig: res },

@@ -6,18 +6,39 @@ import MainLayout from "@/layout/MainLayout";
 import { ApiService } from "@/services/ApiService";
 import { useRouter } from "next/router";
 
-export const getServerSideProps = async ({ query }) => {
-  const { slug } = query;
+export async function getStaticPaths() {
+  // Fetch all product slugs
+  const products = await ApiService.call("/api/products");
 
-  const product = await ApiService.call(`/api/products/${slug}`);
+  // Generate paths for each product
+  const paths = products.map((product) => ({
+    params: { slug: product.slug },
+  }));
 
   return {
-    props: {
-      slug,
-      product,
-    },
+    paths,
+    fallback: "blocking", // Show a loading state while new pages are generated
   };
-};
+}
+
+export async function getStaticProps({ params }) {
+  const { slug } = params;
+
+  try {
+    const product = await ApiService.call(`/api/products/${slug}`);
+
+    return {
+      props: {
+        product,
+      },
+      // revalidate: 60, // Regenerate page after 60 seconds if requested
+    };
+  } catch (error) {
+    return {
+      notFound: true, // Return 404 page if product not found
+    };
+  }
+}
 
 export default function ProductDetail({ product }) {
   console.log("Product:", product);
