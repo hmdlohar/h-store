@@ -49,7 +49,10 @@ export default function MyApp({ Component, pageProps }) {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Component {...pageProps} />
-          <TawkChatWidget />
+          {process.env.NODE_ENV === "production" &&
+            !window?.location?.pathname?.includes("admin") && (
+              <TawkChatWidget />
+            )}
         </ThemeProvider>
       </QueryClientProvider>
     </PostHogProvider>

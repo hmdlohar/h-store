@@ -13,6 +13,9 @@ var UserSchema = new mongoose.Schema({
   },
   email: String,
   name: String,
+  role: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);

@@ -34,6 +34,7 @@ function jwt_MW(req, res, next) {
       next();
     })
     .catch((err) => {
+      console.log(err);
       res.sendError("userNotLogged", "Invalid auth token provided.");
     });
 }

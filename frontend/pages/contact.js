@@ -12,7 +12,6 @@ import {
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import ChatIcon from "@mui/icons-material/Chat";
-import TawkChatWidget from "../common/TawkChatWidget";
 import { CONTACT_EMAIL, CONTACT_PHONE, CS_AVAILABLE_TIME } from "@/constants";
 import MainLayout from "@/layout/MainLayout";
 
