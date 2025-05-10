@@ -26,14 +26,13 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/h-store-backend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/h-store-backend:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/h-store-backend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/h-store-backend:buildcache,mode=max
+          working-directory: ./backend
       
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }} 
