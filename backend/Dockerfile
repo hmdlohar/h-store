@@ -21,4 +21,4 @@ ENV PORT=2008
 EXPOSE 2008
 
 # Use shell form to ensure signal propagation
-CMD ["sh", "-c", "node server.js"]
+CMD ["sh", "-c", "node app.js"]
