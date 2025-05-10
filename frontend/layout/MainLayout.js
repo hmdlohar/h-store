@@ -1,12 +1,17 @@
 import PersonIcon from "@mui/icons-material/Person";
-import SearchIcon from "@mui/icons-material/Search";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import MenuIcon from "@mui/icons-material/Menu";
 import { AppBar, Box, Button, IconButton, Link, Toolbar } from "@mui/material";
 import NextLink from "next/link";
+import MenuDrawer from "./MenuDrawer";
+import { useCommonStore } from "../store/commonStore";
+import EcomImage from "../common/EcomImage";
 
 const MainLayout = ({ children }) => {
+  const { toggleMenu } = useCommonStore();
+
   return (
     <main style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      <MenuDrawer />
       <AppBar
         position="static"
         sx={{ backgroundColor: "#ffffff", color: "#000000", boxShadow: "none" }}
@@ -26,7 +31,7 @@ const MainLayout = ({ children }) => {
               component={NextLink}
               sx={{ cursor: "pointer" }}
             >
-              <img
+              <EcomImage
                 src="/logo-landscape.png"
                 alt="Logo"
                 style={{
@@ -36,41 +41,14 @@ const MainLayout = ({ children }) => {
             </Link>
           </Box>
 
-          {/* Navigation Links (You can customize these links) */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
-            <Button
-              color="inherit"
-              component={NextLink}
-              href="/"
-              sx={{ textTransform: "none" }}
-            >
-              Home
-            </Button>
-            <Button
-              color="inherit"
-              component={NextLink}
-              href="/products"
-              sx={{ textTransform: "none" }}
-            >
-              Products
-            </Button>
-
-            <Button
-              color="inherit"
-              component={NextLink}
-              href="/contact"
-              sx={{ textTransform: "none" }}
-            >
-              Contact Us
-            </Button>
-          </Box>
-
-          {/* Icons */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <IconButton component={NextLink} href="/profile" color="inherit">
-              <PersonIcon />
-            </IconButton>
-          </Box>
+          {/* Menu Icon (visible on all screen sizes) */}
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={() => toggleMenu(true)}
+          >
+            <MenuIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
 
