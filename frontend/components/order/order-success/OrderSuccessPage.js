@@ -44,7 +44,7 @@ export default function OrderSuccessPage({ orderId }) {
             </Typography>
 
             <Typography variant="body1" color="text.secondary" paragraph>
-              Your order has been successfully placed. We'll send you an email
+              Your order has been successfully placed. We'll send you an SMS
               confirmation shortly.
             </Typography>
 
