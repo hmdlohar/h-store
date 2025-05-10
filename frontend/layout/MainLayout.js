@@ -12,8 +12,26 @@ const MainLayout = ({ children }) => {
   return (
     <main style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <MenuDrawer />
+      {/* Placeholder for the top bar */}
       <AppBar
         position="static"
+        sx={{
+          backgroundColor: "#ffffff",
+          color: "#000000",
+          boxShadow: "none",
+          visibility: "hidden",
+        }}
+      >
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        ></Toolbar>
+      </AppBar>
+      <AppBar
+        position="fixed"
         sx={{ backgroundColor: "#ffffff", color: "#000000", boxShadow: "none" }}
       >
         <Toolbar

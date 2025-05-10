@@ -56,7 +56,7 @@ var ProductSchema = new mongoose.Schema({
   ],
   isActive: {
     type: Boolean,
-    default: 0,
+    default: true,
   },
   description: {
     // HTML/Markdown with images support

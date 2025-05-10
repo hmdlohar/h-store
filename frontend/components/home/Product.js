@@ -2,9 +2,11 @@ import React from "react";
 import { Box, Typography, Chip, Grid, Button, Container } from "@mui/material";
 import NextLink from "next/link";
 import EcomImage from "@/common/EcomImage";
+import { useRouter } from "next/router";
 
 const Product = ({ data }) => {
   const { product } = data;
+  const router = useRouter();
 
   if (!product) return null;
 
@@ -18,6 +20,9 @@ const Product = ({ data }) => {
         container
         spacing={3}
         sx={{ border: "1px solid #e0e0e0", borderRadius: 2, p: 1 }}
+        onClick={() => {
+          router.push(`/p/${slug}`);
+        }}
       >
         {/* Left column - Main image */}
         <Grid item size={{ xs: 12, md: 4 }}>

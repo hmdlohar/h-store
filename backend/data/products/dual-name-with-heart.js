@@ -1,4 +1,5 @@
 const product = {
+  isActive: true,
   name: "Couple Name (Red Heart)",
   slug: "couple-name-red-heart",
   category: "Dual Name",

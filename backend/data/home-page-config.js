@@ -4,6 +4,7 @@ const homePageConfig = [
     data: {
       image: "banners/night-lamp-banner",
       mobileImage: "banners/night-lamp-banner",
+      productSlug: "customized-glob-night-lamp",
     },
   },
   {
