@@ -40,3 +40,7 @@ jobs:
       
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }} 
+
+      - name: Deploy to Render
+        run: |
+          curl -X POST "${{ env.RENDER_DEPLOY_URL }}" \

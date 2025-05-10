@@ -41,10 +41,9 @@ export async function getStaticProps({ params }) {
 }
 
 export default function ProductDetail({ product }) {
-  console.log("Product:", product);
   return (
     <>
-      <EcomHead title="Products" />
+      <EcomHead title={product?.name} description={product?.description} />
 
       <MainLayout>
         <ProductDetailPage product={product} />
