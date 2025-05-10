@@ -9,7 +9,7 @@ export default function Login() {
         <title>Login</title>
       </Head>
       <MainLayout>
-        <AuthGuard>Hi i am not here</AuthGuard>
+        <AuthGuard>You are logged in</AuthGuard>
       </MainLayout>
     </>
   );

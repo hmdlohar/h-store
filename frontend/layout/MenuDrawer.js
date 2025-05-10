@@ -22,7 +22,7 @@ import NextLink from "next/link";
 import { useCommonStore } from "../store/commonStore";
 import LogoutIcon from "@mui/icons-material/Logout";
 import EcomImage from "../common/EcomImage";
-
+import LoginIcon from "@mui/icons-material/Login";
 const MenuDrawer = () => {
   const { isMenuOpen, toggleMenu, user } = useCommonStore();
 
@@ -32,6 +32,7 @@ const MenuDrawer = () => {
     ...(user
       ? [{ text: "Orders", icon: <ShoppingBagIcon />, link: "/orders" }]
       : []),
+    ,
     { text: "Contact Us", icon: <ContactMailIcon />, link: "/contact" },
     { text: "Privacy Policy", icon: <SecurityIcon />, link: "/privacy-policy" },
     {
@@ -39,10 +40,14 @@ const MenuDrawer = () => {
       icon: <GavelIcon />,
       link: "/terms-of-service",
     },
-    { text: "Return Policy", icon: <AssignmentReturnIcon />, link: "/return-policy" },
+    {
+      text: "Return Policy",
+      icon: <AssignmentReturnIcon />,
+      link: "/return-policy",
+    },
     ...(user
       ? [{ text: "Logout", icon: <LogoutIcon />, link: "/logout" }]
-      : []),
+      : [{ text: "Login", icon: <LoginIcon />, link: "/login" }]),
   ];
 
   return (

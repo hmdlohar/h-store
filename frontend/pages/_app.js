@@ -13,25 +13,31 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "../theme";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/common/ReactQueryClient";
-import TawkChatWidget from '../common/TawkChatWidget';
+import TawkChatWidget from "../common/TawkChatWidget";
+import { useCommonStore } from "@/store/commonStore";
 
 export default function MyApp({ Component, pageProps }) {
-  useEffect(() => {
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-      api_host: "/ingest",
-      ui_host: "https://us.posthog.com",
-      loaded: (posthog) => {
-        if (process.env.NODE_ENV === "development") posthog.debug();
-      },
-      debug: process.env.NODE_ENV === "development",
-    });
+  const { user } = useCommonStore();
 
-    const handleRouteChange = () => posthog.capture("$pageview");
-    Router.events.on("routeChangeComplete", handleRouteChange);
-    return () => {
-      Router.events.off("routeChangeComplete", handleRouteChange);
-    };
-  }, []);
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "production") {
+      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+        api_host: "/ingest",
+        ui_host: "https://us.posthog.com",
+        loaded: (posthog) => {
+          console.log("posthog loaded");
+        },
+        debug: false,
+      });
+      if (user) {
+        posthog.identify(user._id, {
+          username: user.username,
+          mobile: user.mobile,
+          email: user.email,
+        });
+      }
+    }
+  }, [user]);
 
   return (
     <PostHogProvider client={posthog}>
