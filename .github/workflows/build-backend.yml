@@ -43,4 +43,4 @@ jobs:
 
       - name: Deploy to Render
         run: |
-          curl -X POST "${{ env.RENDER_DEPLOY_URL }}" \
+          curl -X POST "${{ vars.RENDER_DEPLOY_URL }}" \
