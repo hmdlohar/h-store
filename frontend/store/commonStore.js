@@ -1,4 +1,5 @@
 import { LocalStorageUtils } from "hyper-utils";
+import { ApiService } from "@/services/ApiService";
 import { create } from "zustand";
 
 export const useCommonStore = create((set) => ({
@@ -14,5 +15,22 @@ export const useCommonStore = create((set) => ({
     set({ user: null, authToken: null });
     LocalStorageUtils.lsRemove("authToken");
   },
-  toggleMenu: (value) => set({ isMenuOpen: value !== undefined ? value : (state) => !state.isMenuOpen }),
+  toggleMenu: (value) =>
+    set({
+      isMenuOpen: value !== undefined ? value : (state) => !state.isMenuOpen,
+    }),
 }));
+
+export function checkAuth() {
+  const { user, authToken } = useCommonStore.getState();
+  if (authToken && !user) {
+    ApiService.call("/api/user")
+      .then((res) => {
+        useCommonStore.getState().setUser(res);
+      })
+      .catch((error) => {
+        console.log("Error occurred while checking auth", error);
+      });
+  }
+  return false;
+}

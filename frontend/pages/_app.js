@@ -14,13 +14,17 @@ import theme from "../theme";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/common/ReactQueryClient";
 import TawkChatWidget from "../common/TawkChatWidget";
-import { useCommonStore } from "@/store/commonStore";
+import { checkAuth, useCommonStore } from "@/store/commonStore";
 
 export default function MyApp({ Component, pageProps }) {
-  const { user } = useCommonStore();
+  const { user, authToken } = useCommonStore();
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production") {
+    checkAuth();
+  }, [authToken]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") {
       posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
         api_host: "/ingest",
         ui_host: "https://us.posthog.com",

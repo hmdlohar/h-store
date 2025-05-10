@@ -24,7 +24,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import EcomImage from "../common/EcomImage";
 import LoginIcon from "@mui/icons-material/Login";
 const MenuDrawer = () => {
-  const { isMenuOpen, toggleMenu, user } = useCommonStore();
+  const { isMenuOpen, toggleMenu, user, setLogin } = useCommonStore();
 
   const menuItems = [
     { text: "Home", icon: <HomeIcon />, link: "/" },
@@ -46,7 +46,15 @@ const MenuDrawer = () => {
       link: "/return-policy",
     },
     ...(user
-      ? [{ text: "Logout", icon: <LogoutIcon />, link: "/logout" }]
+      ? [
+          {
+            text: "Logout",
+            icon: <LogoutIcon />,
+            onClick: () => {
+              setLogin({ user: null, token: null });
+            },
+          },
+        ]
       : [{ text: "Login", icon: <LoginIcon />, link: "/login" }]),
   ];
 
@@ -79,9 +87,12 @@ const MenuDrawer = () => {
           {menuItems.map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton
-                component={NextLink}
+                component={item.link ? NextLink : "button"}
                 href={item.link}
-                onClick={() => toggleMenu(false)}
+                onClick={() => {
+                  if (item.onClick) item.onClick();
+                  toggleMenu(false);
+                }}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
