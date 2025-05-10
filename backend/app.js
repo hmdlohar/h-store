@@ -78,3 +78,20 @@ const server = http.createServer(app);
 server.listen(config.PORT, () => {
   console.log("listening on port " + config.PORT);
 });
+
+process.on("SIGINT", () => {
+  console.log("SIGINT signal received: closing HTTP server");
+  // Close your server, database connections, etc.
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
+});
+
+process.on("SIGTERM", () => {
+  console.log("SIGTERM signal received: closing HTTP server");
+  server.close(() => {
+    console.log("HTTP server closed");
+    process.exit(0);
+  });
+});

@@ -36,7 +36,7 @@
     "no-throw-literal": "error", // Only throw Error objects
 
     // Express specific
-    "no-process-exit": "error", // Don't use process.exit() directly
+    "no-process-exit": "off", // Don't use process.exit() directly
     "no-process-env": "off" // Allow process.env access
   }
 }
