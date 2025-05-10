@@ -25,31 +25,6 @@ const product = {
         minLength: 10,
       },
     },
-
-    {
-      fieldType: "color",
-      field: "color",
-      label: "Select Color",
-      options: [
-        {
-          code: "#000000",
-          name: "Black",
-        },
-        {
-          code: "#FFFFFF",
-          name: "White",
-        },
-        {
-          code: "#FF0000",
-          name: "Red",
-        },
-        {
-          code: "#C39BD3",
-          name: "Violet",
-        },
-      ],
-      required: true,
-    },
   ],
   images: [
     {

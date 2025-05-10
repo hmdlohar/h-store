@@ -28,14 +28,28 @@ export default function AddCustomization() {
   const shape = {};
   customizations.forEach((c) => {
     let validator = c.fieldType === "image" ? Yup.mixed() : Yup.string();
+    let minlength = c.info?.minLength;
+    let maxlength = c.info?.maxLength;
     if (order?.info?.variant && c.fieldType === "text") {
       const objVariant = product.variants?.[order.info.variant];
       if (objVariant?.maxLength) {
-        validator = validator.max(
-          objVariant.maxLength,
-          `Can not add more than ${objVariant.maxLength} characters. You may choose different variant.`
-        );
+        maxlength = objVariant.maxLength;
       }
+      if (objVariant?.minLength) {
+        minlength = objVariant.minLength;
+      }
+    }
+    if (minlength) {
+      validator = validator.min(
+        minlength,
+        `Can not add less than ${minlength} characters. You may choose different variant.`
+      );
+    }
+    if (maxlength) {
+      validator = validator.max(
+        maxlength,
+        `Can not add more than ${maxlength} characters. You may choose different variant.`
+      );
     }
     if (c.required) validator = validator.required("Required");
     shape[c.field] = validator;
@@ -52,7 +66,7 @@ export default function AddCustomization() {
   return (
     <Box>
       <Typography variant="h6" mb={2}>
-        Add Customization
+        Add Customization Details
       </Typography>
       <Formik
         initialValues={initial}
