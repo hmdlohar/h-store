@@ -1,6 +1,7 @@
 import React from "react";
-import { Box, Typography, Grid, Container } from "@mui/material";
+import { Box, Typography, Grid, Container, Button } from "@mui/material";
 import ProductItem from "@/components/products/ProductItem";
+import Link from "next/link";
 
 const ProductRow = ({ data }) => {
   const { title, products } = data;
@@ -11,7 +12,7 @@ const ProductRow = ({ data }) => {
     <Container sx={{ mb: 4, p: 2 }}>
       <Box sx={{ border: "1px solid #e0e0e0", borderRadius: 2, p: 1 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-          {title}
+          {title} <Button component={Link} variant="contained" color="primary" href="/products">View All</Button>
         </Typography>
 
         <Grid container spacing={2}>
