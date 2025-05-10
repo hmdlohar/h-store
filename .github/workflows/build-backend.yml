@@ -9,6 +9,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     
     steps:
       - name: Checkout code
@@ -32,7 +35,6 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/h-store-backend:${{ github.sha }}
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/h-store-backend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/h-store-backend:buildcache,mode=max
-          working-directory: ./backend
       
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }} 
