@@ -36,7 +36,7 @@ const ProductList = () => {
   }, [category]);
 
   return (
-    <>
+    <Container>
       <Typography variant="h4" component="h1" gutterBottom>
         {category ? `${category} Gifts` : "All Products"}
       </Typography>
@@ -48,7 +48,7 @@ const ProductList = () => {
           </Grid>
         ))}
       </Grid>
-    </>
+    </Container>
   );
 };
 
