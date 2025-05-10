@@ -3,6 +3,7 @@ const UserModel = require("../models/UserModel");
 const Utils = require("../services/Utils");
 const jwtService = require("../services/jwtService");
 const config = require("../config");
+const ProductModel = require("../models/ProductModel");
 
 const router = express.Router();
 
@@ -89,6 +90,18 @@ router.post("/verify-otp", async (req, res) => {
     console.log(ex);
     res.sendError(ex, "Error occured while verifying OTP. ");
   }
+});
+
+router.get("/home-page-config", async (req, res) => {
+  const homePageConfig = require("../data/home-page-config");
+  for (let item of homePageConfig) {
+    if (item.type === "product") {
+      item.data.product = await ProductModel.findOne({ slug: item.data.slug });
+    } else if (item.type === "product-row") {
+      item.data.products = await ProductModel.find({}).limit(4);
+    }
+  }
+  res.sendSuccess(homePageConfig, "Home page config fetched successfully");
 });
 
 module.exports = router;

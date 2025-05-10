@@ -1,0 +1,9 @@
+---
+description: Frontend
+globs: frontend/**/*
+---
+
+# Your rule content
+
+- we are using mui 7 so while using mui component use latest syntax, e.g. Grid now have the size prop instead of xs,md etc...
+- use [EcomImage.js](mdc:frontend/common/EcomImage.js) instead of general image where you see the path
