@@ -25,6 +25,7 @@ import {
   GST_NUMBER,
 } from "@/constants";
 import MainLayout from "@/layout/MainLayout";
+import EcomHead from "@/common/EcomHead";
 
 export default function Contact() {
   const handleChatClick = () => {
@@ -35,6 +36,7 @@ export default function Contact() {
 
   return (
     <MainLayout>
+      <EcomHead title="Contact Us" />
       <Container maxWidth="lg" sx={{ py: 1 }}>
         <Box textAlign="center" mb={2}>
           <Typography variant="h2" component="h1" gutterBottom>

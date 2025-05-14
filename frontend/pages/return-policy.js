@@ -2,9 +2,11 @@ import React from 'react';
 import { Container, Typography, Box, Paper } from '@mui/material';
 import MainLayout from '../layout/MainLayout';
 import { CONTACT_EMAIL, CONTACT_PHONE, CONTACT_ADDRESS } from '../constants';
+import EcomHead from '@/common/EcomHead';
 const ReturnPolicy = () => {
   return (
     <MainLayout>
+      <EcomHead title="Return & Refund Policy" />
       <Container maxWidth="md" sx={{ py: 1 }}>
         <Paper elevation={0} sx={{ p: 1 }}>
           <Typography variant="h3" component="h1" gutterBottom>
