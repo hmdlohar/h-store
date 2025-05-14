@@ -8,11 +8,22 @@ import {
   Card,
   CardContent,
   Button,
+  Divider,
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import ChatIcon from "@mui/icons-material/Chat";
-import { CONTACT_EMAIL, CONTACT_PHONE, CS_AVAILABLE_TIME } from "@/constants";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import BusinessIcon from "@mui/icons-material/Business";
+import {
+  CONTACT_EMAIL,
+  CONTACT_PHONE,
+  CONTACT_ADDRESS,
+  CS_AVAILABLE_TIME,
+  LEGAL_NAME,
+  LEGAL_ADDRESS,
+  GST_NUMBER,
+} from "@/constants";
 import MainLayout from "@/layout/MainLayout";
 
 export default function Contact() {
@@ -117,6 +128,79 @@ export default function Contact() {
             </Card>
           </Grid>
         </Grid>
+
+        <Typography
+          variant="h4"
+          component="h2"
+          gutterBottom
+          sx={{ mt: 8, mb: 4, textAlign: "center" }}
+        >
+          Business Information
+        </Typography>
+
+        <Paper elevation={3} sx={{ p: 4, mb: 6 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Box display="flex" alignItems="flex-start" mb={2}>
+                <BusinessIcon sx={{ mr: 2, color: "primary.main" }} />
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Legal Business Name
+                  </Typography>
+                  <Typography variant="body1">{LEGAL_NAME}</Typography>
+                </Box>
+              </Box>
+
+              <Box display="flex" alignItems="flex-start" mb={2}>
+                <LocationOnIcon sx={{ mr: 2, color: "primary.main" }} />
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Registered Address
+                  </Typography>
+                  <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
+                    {LEGAL_ADDRESS}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Box display="flex" alignItems="flex-start" mb={2}>
+                <Box
+                  sx={{
+                    mr: 2,
+                    color: "primary.main",
+                    width: 24,
+                    height: 24,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography variant="body1" fontWeight="bold">
+                    GST
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    GST Number
+                  </Typography>
+                  <Typography variant="body1">{GST_NUMBER}</Typography>
+                </Box>
+              </Box>
+
+              <Box display="flex" alignItems="flex-start" mb={2}>
+                <EmailIcon sx={{ mr: 2, color: "primary.main" }} />
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Email
+                  </Typography>
+                  <Typography variant="body1">{CONTACT_EMAIL}</Typography>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
       </Container>
     </MainLayout>
   );

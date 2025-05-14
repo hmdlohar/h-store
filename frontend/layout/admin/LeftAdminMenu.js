@@ -10,6 +10,10 @@ export default function LeftAdminMenu() {
   const router = useRouter();
   const menuItems = [
     {
+      label: "Dashboard",
+      href: "/admin",
+    },
+    {
       label: "Orders",
       href: "/admin/orders",
     },
