@@ -15,7 +15,7 @@ export async function launchCashfreePayment(sessionId) {
   console.log(Cashfree, "sdk");
   return new Promise((resolve, reject) => {
     const cashfree = Cashfree({
-      mode: "sandbox",
+      mode: process.env.NODE_ENV === "production" ? "production" : "sandbox",
     });
 
     let checkoutOptions = {
