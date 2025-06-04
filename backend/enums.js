@@ -7,4 +7,7 @@ module.exports = {
     DELIVERED: "delivered",
     CANCELLED: "cancelled",
   },
+  JOB_TYPE: {
+    ORDER_NOTIFICATION: "order-notification",
+  },
 };

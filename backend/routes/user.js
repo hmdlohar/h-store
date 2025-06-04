@@ -3,6 +3,7 @@ const express = require("express");
 const Utils = require("../services/Utils");
 const OrderModel = require("../models/OrderModel");
 const utils = require("../services/Utils");
+const { parseErrorString } = require("hyper-utils");
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get("/", async (req, res) => {
   try {
     res.sendSuccess(req.user, "User data fetched successfully");
   } catch (ex) {
-    res.sendError(ex, Utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 
@@ -22,7 +23,7 @@ router.get("/get-existing-address", async (req, res) => {
 
     res.sendSuccess(order?.deliveryAddress || null);
   } catch (ex) {
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 

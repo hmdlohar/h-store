@@ -1,4 +1,6 @@
 const express = require("express");
+const JobQueue = require("../models/JobQueue");
+
 const router = express.Router();
 const OrderModel = require("../models/OrderModel");
 const utils = require("../services/Utils");
@@ -7,6 +9,7 @@ const ProductModel = require("../models/ProductModel");
 const ImageKitService = require("../services/ImageKitService");
 const multer = require("multer");
 const enums = require("../enums");
+const { parseErrorString } = require("hyper-utils");
 const upload = multer({ storage: multer.memoryStorage() }); // or diskStorage
 
 router.post("/", async (req, res) => {
@@ -17,7 +20,7 @@ router.post("/", async (req, res) => {
     return res.sendSuccess(order, "Order Created Successfully");
   } catch (ex) {
     console.log(ex);
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 
@@ -43,7 +46,7 @@ router.put("/set-variant/:orderId/:productId/:variantId", async (req, res) => {
     return res.sendSuccess(order, "Order updated Successfully");
   } catch (ex) {
     console.log(ex);
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 
@@ -64,7 +67,7 @@ router.put("/set-customization/:orderId/:productId", async (req, res) => {
     return res.sendSuccess(order, "Order updated Successfully");
   } catch (ex) {
     console.log(ex);
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 
@@ -80,7 +83,7 @@ router.put("/set-address/:orderId", async (req, res) => {
     return res.sendSuccess(order, "Order updated Successfully");
   } catch (ex) {
     console.log(ex);
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 
@@ -102,7 +105,7 @@ router.post("/upload-image", upload.single("file"), async (req, res) => {
     return res.sendSuccess({ orderID, filePath: result.filePath });
   } catch (ex) {
     console.log(ex);
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 
@@ -126,7 +129,7 @@ router.post("/create-cashfree-order", async (req, res) => {
     await order.save();
     res.sendSuccess(result);
   } catch (ex) {
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 
@@ -143,10 +146,16 @@ router.post("/verify-cashfree-order", async (req, res) => {
       throw new Error("Order not paid");
     }
     order.set("status", enums.ORDER_STATUS.PAID);
+    JobQueue.create({
+      type: "order-paid",
+      context: {
+        orderId,
+      },
+    });
     await order.save();
     return res.sendSuccess(order, "Order paid successfully");
   } catch (ex) {
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 
@@ -162,7 +171,7 @@ router.post("/verify-cashfree-order", async (req, res) => {
 //     }
 //     res.sendSuccess(order);
 //   } catch (ex) {
-//     res.sendError(ex, utils.parseErrorString(ex));
+//     res.sendError(ex, parseErrorString(ex));
 //   }
 // });
 
@@ -221,7 +230,7 @@ router.get("/:orderID?", async (req, res) => {
       res.sendSuccess(orders);
     }
   } catch (ex) {
-    res.sendError(ex, utils.parseErrorString(ex));
+    res.sendError(ex, parseErrorString(ex));
   }
 });
 

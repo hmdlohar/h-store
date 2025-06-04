@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/ProductModel"); // Import the Product model
 const Utils = require("../services/Utils"); // Import Utils for error parsing
+const { parseErrorString } = require("hyper-utils");
 
 // GET /api/products - List all products
 router.get("/", async (req, res) => {
@@ -11,11 +12,7 @@ router.get("/", async (req, res) => {
     res.sendSuccess(products, "Products fetched successfully"); // Use res.sendSuccess
   } catch (err) {
     // Use res.sendError with parsed message and status 500
-    res.sendError(
-      err,
-      Utils.parseErrorString(err) || "Error fetching products",
-      500
-    );
+    res.sendError(err, parseErrorString(err) || "Error fetching products", 500);
   }
 });
 
@@ -39,7 +36,7 @@ router.get("/:slug", async (req, res) => {
     // Use res.sendError with parsed message and status 500
     res.sendError(
       err,
-      Utils.parseErrorString(err) || "Error fetching product details",
+      parseErrorString(err) || "Error fetching product details",
       500
     );
   }

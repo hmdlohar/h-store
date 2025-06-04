@@ -9,6 +9,16 @@ class MessageService {
     });
     await messageLog.save();
   }
+
+  static async sendEmail({ to, subject, message }) {
+    const emailLog = new MessageLogModel({
+      type: "email",
+      content: message,
+      to,
+      subject,
+    });
+    await emailLog.save();
+  }
 }
 
 module.exports = MessageService;

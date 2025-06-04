@@ -8,6 +8,7 @@ const config = require("./config");
 const api = require("./routes/api");
 const cors = require("cors");
 const path = require("path");
+const { initCron } = require("./cron/init-cron");
 const app = express();
 
 // Global error handlers for uncaught exceptions and unhandled promises
@@ -28,6 +29,7 @@ mongoose
   })
   .then((con) => {
     console.log(`mongo is connected.`);
+    initCron();
   })
   .catch((err) => {
     console.log(`Can't connect mongo ${err.toString()}. `);

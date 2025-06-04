@@ -1,21 +1,5 @@
 const fs = require("fs");
 class Utils {
-  parseErrorString(error) {
-    if (typeof error === "string") {
-      return error;
-    }
-    if (typeof error?.response?.data?.message === "string") {
-      return error.response.data.message;
-    }
-    if (typeof error.Error === "string") {
-      return error.Error;
-    }
-    if (typeof error.Message === "string") {
-      return error.Message;
-    }
-    return error.toString();
-  }
-
   extractLimitOffsetSort(req) {
     let { limit, offset, sort, sortOrder } = req.query;
     let obj = { sort: null, limit: 0, offset: 0 };
