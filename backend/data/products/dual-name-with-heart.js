@@ -11,29 +11,37 @@ const product = {
     - Thoughtful Birthday Gift for Wife: Make her birthday extra special with a thoughtful birthday gift for wife, showcasing your love and appreciation, perfect for memorable moments.
     `,
   mrp: 999,
-  price: 399, // Base price for Upto 5 Characters
+  price: 219, // Base price for Upto 4 Characters
   mainImage: {
     imagePath: "products/dual-name-with-heart/1.png",
   },
   variants: {
+    "4 Characters": {
+      price: 219,
+      maxLength: 4,
+    },
+    "5 Characters": {
+      price: 249,
+      maxLength: 5,
+    },
     "6 Characters": {
-      price: 399,
+      price: 299,
       maxLength: 6,
     },
     "7 Characters": {
-      price: 449,
+      price: 349,
       maxLength: 7,
     },
     "8 Characters": {
-      price: 529,
+      price: 399,
       maxLength: 8,
     },
     "9 Characters": {
-      price: 589,
+      price: 449,
       maxLength: 9,
     },
     "10 Characters": {
-      price: 649,
+      price: 499,
       maxLength: 10,
     },
   },

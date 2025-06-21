@@ -7,6 +7,8 @@ import EcomImage from "@/common/EcomImage";
 import { launchCashfreePayment } from "@/utils/cashfree";
 import { useMutation } from "@tanstack/react-query";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
+import { CONTACT_PHONE } from "@/constants";
+import posthog from "posthog-js";
 
 function prettyPrice(amount) {
   return `₹${Number(amount).toLocaleString("en-IN")}`;
@@ -49,6 +51,15 @@ export default function OrderReviewAndPay() {
   const router = useRouter();
   // Payment handler
   async function handlePay() {
+    posthog.capture("pay_now", {
+      orderId: order._id,
+      productId: product._id,
+      productName: product.name,
+      productPrice: product.price,
+      productDescription: product.description,
+      productSlug: product.slug,
+      orderId: order._id,
+    });
     setPayError("");
     setPaying(true);
     try {
@@ -63,11 +74,27 @@ export default function OrderReviewAndPay() {
       const paymentResult = await launchCashfreePayment(
         data.payment_session_id
       );
-      console.log(paymentResult, "paymentResult");
-
+      posthog.capture("payment_result", {
+        orderId: order._id,
+        productId: product._id,
+        productName: product.name,
+        productPrice: product.price,
+        productDescription: product.description,
+        productSlug: product.slug,
+        orderId: order._id,
+        paymentResult,
+      });
       const result = await actionVerifyCashfreeOrder.mutateAsync();
       console.log(result, "result");
     } catch (ex) {
+      posthog.capture("payment_failed", {
+        orderId: order._id,
+        productId: product._id,
+        productName: product.name,
+        productPrice: product.price,
+        productDescription: product.description,
+      });
+
       setPayError(ex?.message || "Payment failed. Please try again.");
     } finally {
       setPaying(false);
@@ -191,9 +218,16 @@ export default function OrderReviewAndPay() {
         <Typography variant="body2">{address.country || "India"}</Typography>
       </Box>
 
-      <Typography variant="body2" textAlign="center" mt={2}>
-        Pay now to confirm your order. You will receive an SMS with order
-        details once payment is successful.
+      <Typography variant="body2" textAlign="center" mt={2} mb={2}>
+        Pay now to confirm your order. You will receive an Whatsapp message with
+        order details once payment is successful.
+        <br />
+        In case of any issues, please contact us on{" "}
+        <a
+          href={`https://wa.me/${CONTACT_PHONE?.replace(/\s/g, "")?.replace(/\+/g, "")}`}
+        >
+          {CONTACT_PHONE}
+        </a>
       </Typography>
 
       <Button

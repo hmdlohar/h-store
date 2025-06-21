@@ -98,7 +98,7 @@ router.get("/home-page-config", async (req, res) => {
     if (item.type === "product") {
       item.data.product = await ProductModel.findOne({ slug: item.data.slug });
     } else if (item.type === "product-row") {
-      item.data.products = await ProductModel.find({ isActive: true }).limit(4);
+      item.data.products = await ProductModel.find({ isActive: true }).limit(10);
     }
   }
   res.sendSuccess(homePageConfig, "Home page config fetched successfully");

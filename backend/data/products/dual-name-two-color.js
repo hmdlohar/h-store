@@ -12,7 +12,7 @@ const product = {
     - Versatile Flip Name Gift: Whether it's an engagement ring platter or a flip name gift, find the perfect present for any milestone in your relationship, making each moment memorable.        
       `,
   mrp: 999,
-  price: 350,
+  price: 219,
   mainImage: {
     imagePath: "products/dual-name-two-color/43.png",
   },
@@ -61,24 +61,32 @@ const product = {
     },
   ],
   variants: {
+    "4 Characters": {
+      price: 219,
+      maxLength: 4,
+    },
+    "5 Characters": {
+      price: 249,
+      maxLength: 5,
+    },
     "6 Characters": {
-      price: 399,
+      price: 299,
       maxLength: 6,
     },
     "7 Characters": {
-      price: 449,
+      price: 349,
       maxLength: 7,
     },
     "8 Characters": {
-      price: 529,
+      price: 399,
       maxLength: 8,
     },
     "9 Characters": {
-      price: 589,
+      price: 449,
       maxLength: 9,
     },
     "10 Characters": {
-      price: 649,
+      price: 499,
       maxLength: 10,
     },
   },

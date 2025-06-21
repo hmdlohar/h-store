@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useOrderStore } from "@/store/orderStore";
+import posthog from "posthog-js";
 import {
   Typography,
   Button,
@@ -86,6 +87,13 @@ export default function SelectVariant() {
             variant="contained"
             onClick={() => {
               actionUpdateVariant.mutate();
+              posthog.capture("select_variant", {
+                productId: product._id,
+                productName: product.name,
+                productPrice: product.variants?.[variant]?.price,
+                productImage: product.image,
+                productDescription: product.description,
+              });
             }}
             color="primary"
           >

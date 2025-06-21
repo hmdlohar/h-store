@@ -1,5 +1,11 @@
 const homePageConfig = [
   {
+    type: "product-row",
+    data: {
+      title: "Our Products",
+    },
+  },
+  {
     type: "banner",
     data: {
       image: "banners/night-lamp-banner",
@@ -11,12 +17,6 @@ const homePageConfig = [
     type: "product",
     data: {
       slug: "couple-name-red-heart",
-    },
-  },
-  {
-    type: "product-row",
-    data: {
-      title: "Our Products",
     },
   },
 ];
