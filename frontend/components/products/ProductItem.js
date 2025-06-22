@@ -54,6 +54,7 @@ const ProductItem = ({ product }) => {
         style={{
           width: "100%",
         }}
+        thumbnail 
       />
 
       <CardContent sx={{ px: 1, py: 1 }}>

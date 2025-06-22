@@ -91,6 +91,7 @@ export default function OrderDetailPage({ orderId }) {
                   thumbnail
                   style={{ width: "100%", borderRadius: 8 }}
                   alt={orderData.product.name}
+                  adaptToMobile
                 />
               ) : (
                 <Box

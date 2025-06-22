@@ -61,6 +61,7 @@ const ProductImageSlider = ({ images = [] }) => {
             objectFit: "contain",
             borderRadius: 1,
           }}
+          adaptToMobile
         />
         <IconButton
           onClick={goToNext}

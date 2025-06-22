@@ -63,7 +63,7 @@ const MainLayout = ({ children }) => {
                 sx={{ cursor: "pointer" }}
               >
                 <EcomImage
-                  src="/logo-landscape.png"
+                  src="/logo-landscape-small.png"
                   alt="Logo"
                   style={{
                     height: 50,

@@ -1,11 +1,12 @@
 import EcomImage from "@/common/EcomImage";
-import { Container } from "@mui/material";
+import { Container, useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import React from "react";
 
 const Banner = ({ data }) => {
   const { image, mobileImage, productSlug } = data;
   const router = useRouter();
+  const isMobile = useMediaQuery("(max-width: 668px)");
 
   return (
     <Container sx={{ p: 2 }}>
@@ -16,6 +17,7 @@ const Banner = ({ data }) => {
         onClick={() => {
           router.push(`/p/${productSlug}`);
         }}
+        tr={isMobile ? "tr=w-350" : "tr=w-1000"}
       />
     </Container>
   );

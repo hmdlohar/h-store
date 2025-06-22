@@ -55,6 +55,7 @@ const Product = ({ data }) => {
                 height: "auto",
                 borderRadius: 8,
               }}
+              adaptToMobile
             />
           </Box>
         </Grid>

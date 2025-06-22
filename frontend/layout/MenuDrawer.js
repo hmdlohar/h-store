@@ -71,7 +71,7 @@ const MenuDrawer = () => {
         >
           <Box component={NextLink} href="/" sx={{ cursor: "pointer" }}>
             <EcomImage
-              src="/logo-landscape.png"
+              src="/logo-landscape-small.png"
               alt="Logo"
               style={{ height: 40 }}
             />
