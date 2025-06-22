@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://giftsh.in/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# Allow important pages
+Allow: /products
+Allow: /p/
+Allow: /contact
+Allow: /privacy-policy
+Allow: /terms-of-service
+Allow: /return-policy 

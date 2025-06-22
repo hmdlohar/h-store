@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 2009",
-    "build": "next build",
+    "build": "npm run generate-sitemap && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate-sitemap": "node scripts/generate-sitemap.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -15,6 +16,7 @@
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "@tanstack/react-query": "^5.74.4",
+    "dotenv": "^16.5.0",
     "formik": "^2.4.6",
     "hyper-utils": "^1.1.11",
     "next": "15.3.0",
