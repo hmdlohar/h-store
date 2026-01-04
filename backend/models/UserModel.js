@@ -1,6 +1,12 @@
 var mongoose = require("mongoose");
 
 var UserSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    default: function () {
+      return new mongoose.Types.ObjectId();
+    },
+  },
   username: {
     type: String,
     required: true,
@@ -15,6 +21,14 @@ var UserSchema = new mongoose.Schema({
   name: String,
   role: {
     type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  // This should include ip, browser, os, device
+  signupData: {
+    type: Object,
   },
 });
 

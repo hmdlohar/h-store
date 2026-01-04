@@ -35,6 +35,20 @@ router.post("/", async (req, res) => {
   }
 });
 
+
+
+router.post("/amazon", async (req, res) => {
+  try {
+    let order = new OrderModel(setSubTotal(req.body));
+    order.userID = req.user._id;
+    await order.save();
+    return res.sendSuccess(order, "Order Created Successfully");
+  } catch (ex) {
+    console.log(ex);
+    res.sendError(ex, parseErrorString(ex));
+  }
+});
+
 router.put("/set-variant/:orderId/:productId/:variantId", async (req, res) => {
   try {
     const { orderId, productId, variantId } = req.params;

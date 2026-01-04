@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 
 const MessageLogSchema = new mongoose.Schema({
+  _id: {
+    type: String,
+    default: function () {
+      return new mongoose.Types.ObjectId();
+    },
+  },
   type: {
     type: String,
     required: true,
