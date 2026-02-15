@@ -22,6 +22,8 @@ router.use("/admin", (req, res, next) => {
   next();
 });
 router.use("/admin/orders", require("./admin/orders"));
+router.use("/admin/products", require("./admin/products"));
+router.use("/admin/upload", require("./admin/upload"));
 
 router.get("/", (req, res) => {
   return res.send("Router is working.");
