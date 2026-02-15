@@ -13,7 +13,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "../theme";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/common/ReactQueryClient";
-import TawkChatWidget from "../common/TawkChatWidget";
+// import TawkChatWidget from "../common/TawkChatWidget";
 import { checkAuth, useCommonStore } from "@/store/commonStore";
 
 export default function MyApp({ Component, pageProps }) {
@@ -33,6 +33,7 @@ export default function MyApp({ Component, pageProps }) {
           console.log("posthog loaded");
         },
         debug: false,
+        capture_pageview: false, // Disable auto page views - tracked server-side
       });
       if (user) {
         posthog.identify(user._id, {
@@ -50,10 +51,11 @@ export default function MyApp({ Component, pageProps }) {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Component {...pageProps} />
+          {/* TawkChatWidget commented out
           {process.env.NODE_ENV === "production" &&
             !router?.pathname?.includes("admin") && (
               <TawkChatWidget />
-            )}
+            )} */}
         </ThemeProvider>
       </QueryClientProvider>
     </PostHogProvider>

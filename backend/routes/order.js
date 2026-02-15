@@ -7,6 +7,7 @@ const utils = require("../services/Utils");
 const { setSubTotal } = require("../util/orderUtils");
 const ProductModel = require("../models/ProductModel");
 const ImageKitService = require("../services/ImageKitService");
+const postHog = require("../services/PostHogService");
 const multer = require("multer");
 const enums = require("../enums");
 const { parseErrorString } = require("hyper-utils");
@@ -17,9 +18,19 @@ router.post("/", async (req, res) => {
     let order = new OrderModel(setSubTotal(req.body));
     order.userID = req.user._id;
     await order.save();
+    
+    postHog.trackUserEvent(req.distinctId || req.user._id.toString(), "order_created", {
+      order_id: order._id.toString(),
+      order_number: order.orderNumber,
+      amount: order.amount,
+      item_count: order.items.length,
+      user_id: req.user._id.toString(),
+    });
+    
     return res.sendSuccess(order, "Order Created Successfully");
   } catch (ex) {
     console.log(ex);
+    postHog.trackError(ex, { route: "POST /order", user_id: req.user?._id, distinct_id: req.distinctId });
     res.sendError(ex, parseErrorString(ex));
   }
 });
@@ -43,9 +54,20 @@ router.put("/set-variant/:orderId/:productId/:variantId", async (req, res) => {
     order.info = { ...order.info, variant: variantId };
     setSubTotal(order);
     await OrderModel.updateOne({ _id: orderId }, order);
+    
+    postHog.trackUserEvent(req.distinctId || req.user._id.toString(), "order_variant_selected", {
+      order_id: orderId,
+      product_id: productId,
+      variant_id: variantId,
+      variant_name: variant.name,
+      price: variant.price,
+      user_id: req.user._id.toString(),
+    });
+    
     return res.sendSuccess(order, "Order updated Successfully");
   } catch (ex) {
     console.log(ex);
+    postHog.trackError(ex, { route: "PUT /order/set-variant", user_id: req.user?._id, distinct_id: req.distinctId });
     res.sendError(ex, parseErrorString(ex));
   }
 });
@@ -64,9 +86,18 @@ router.put("/set-customization/:orderId/:productId", async (req, res) => {
     });
 
     await OrderModel.updateOne({ _id: orderId }, order);
+    
+    postHog.trackUserEvent(req.distinctId || req.user._id.toString(), "order_customization_added", {
+      order_id: orderId,
+      product_id: productId,
+      customization_keys: Object.keys(customization),
+      user_id: req.user._id.toString(),
+    });
+    
     return res.sendSuccess(order, "Order updated Successfully");
   } catch (ex) {
     console.log(ex);
+    postHog.trackError(ex, { route: "PUT /order/set-customization", user_id: req.user?._id, distinct_id: req.distinctId });
     res.sendError(ex, parseErrorString(ex));
   }
 });
@@ -80,9 +111,19 @@ router.put("/set-address/:orderId", async (req, res) => {
     order.deliveryAddress = address;
 
     await OrderModel.updateOne({ _id: orderId }, order);
+    
+    postHog.trackUserEvent(req.distinctId || req.user._id.toString(), "order_address_set", {
+      order_id: orderId,
+      has_address: !!address,
+      city: address?.city,
+      state: address?.state,
+      user_id: req.user._id.toString(),
+    });
+    
     return res.sendSuccess(order, "Order updated Successfully");
   } catch (ex) {
     console.log(ex);
+    postHog.trackError(ex, { route: "PUT /order/set-address", user_id: req.user?._id, distinct_id: req.distinctId });
     res.sendError(ex, parseErrorString(ex));
   }
 });
@@ -102,9 +143,17 @@ router.post("/upload-image", upload.single("file"), async (req, res) => {
       `/order/${orderID}`
     );
 
+    postHog.trackUserEvent(req.distinctId || req.user._id.toString(), "order_image_uploaded", {
+      order_id: orderID,
+      file_name: file.originalname,
+      file_size: file.size,
+      user_id: req.user._id.toString(),
+    });
+
     return res.sendSuccess({ orderID, filePath: result.filePath });
   } catch (ex) {
     console.log(ex);
+    postHog.trackError(ex, { route: "POST /order/upload-image", user_id: req.user?._id, distinct_id: req.distinctId });
     res.sendError(ex, parseErrorString(ex));
   }
 });
@@ -127,8 +176,18 @@ router.post("/create-cashfree-order", async (req, res) => {
     order.set("pgOrderID", result.order_id);
 
     await order.save();
+    
+    postHog.trackUserEvent(req.distinctId || req.user._id.toString(), "payment_initiated", {
+      order_id: orderId,
+      amount: order.amount,
+      payment_gateway: "cashfree",
+      pg_order_id: result.order_id,
+      user_id: req.user._id.toString(),
+    });
+    
     res.sendSuccess(result);
   } catch (ex) {
+    postHog.trackError(ex, { route: "POST /order/create-cashfree-order", user_id: req.user?._id, distinct_id: req.distinctId });
     res.sendError(ex, parseErrorString(ex));
   }
 });
@@ -143,6 +202,13 @@ router.post("/verify-cashfree-order", async (req, res) => {
     );
 
     if (result?.order_status !== "PAID") {
+      postHog.trackUserEvent(req.distinctId || req.user._id.toString(), "payment_failed", {
+        order_id: orderId,
+        pg_order_id: order.pgOrderID,
+        order_status: result?.order_status,
+        amount: order.amount,
+        user_id: req.user._id.toString(),
+      });
       throw new Error("Order not paid");
     }
     order.set("status", enums.ORDER_STATUS.PAID);
@@ -153,8 +219,18 @@ router.post("/verify-cashfree-order", async (req, res) => {
       },
     });
     await order.save();
+    
+    postHog.trackUserEvent(req.distinctId || req.user._id.toString(), "payment_success", {
+      order_id: orderId,
+      pg_order_id: order.pgOrderID,
+      amount: order.amount,
+      payment_gateway: "cashfree",
+      user_id: req.user._id.toString(),
+    });
+    
     return res.sendSuccess(order, "Order paid successfully");
   } catch (ex) {
+    postHog.trackError(ex, { route: "POST /order/verify-cashfree-order", user_id: req.user?._id, distinct_id: req.distinctId });
     res.sendError(ex, parseErrorString(ex));
   }
 });

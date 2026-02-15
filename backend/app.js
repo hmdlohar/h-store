@@ -9,6 +9,9 @@ const api = require("./routes/api");
 const cors = require("cors");
 const path = require("path");
 const { initCron } = require("./cron/init-cron");
+const postHog = require("./services/PostHogService");
+const trackRequest = require("./middlewares/trackRequest");
+const cookieParser = require("cookie-parser");
 const app = express();
 
 // Global error handlers for uncaught exceptions and unhandled promises
@@ -42,6 +45,12 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Allow Cross origin request to this server
 app.use(cors());
+
+// Parse cookies (needed for PostHog distinct_id)
+app.use(cookieParser());
+
+// Track all incoming requests for analytics
+app.use(trackRequest);
 
 app.use("/api", api);
 
@@ -85,6 +94,7 @@ server.listen(config.PORT, () => {
 
 process.on("SIGINT", () => {
   console.log("SIGINT signal received: closing HTTP server");
+  postHog.shutdown();
   // Close your server, database connections, etc.
   server.close(() => {
     console.log("HTTP server closed");
@@ -94,6 +104,7 @@ process.on("SIGINT", () => {
 
 process.on("SIGTERM", () => {
   console.log("SIGTERM signal received: closing HTTP server");
+  postHog.shutdown();
   server.close(() => {
     console.log("HTTP server closed");
     process.exit(0);
