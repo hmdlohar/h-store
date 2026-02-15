@@ -36,7 +36,9 @@ mongoose
   });
 
 // It is used to parse application/json data came in request body.
-app.use(express.json());
+// Increased limit to 10MB for image uploads
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Allow Cross origin request to this server
 app.use(cors());

@@ -18,6 +18,10 @@ export default function LeftAdminMenu() {
       href: "/admin/orders",
     },
     {
+      label: "Products",
+      href: "/admin/products",
+    },
+    {
       label: "Users",
       href: "/admin/users",
     },
