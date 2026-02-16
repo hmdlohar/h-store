@@ -3,7 +3,7 @@ import { Box, Button, useTheme, useMediaQuery } from "@mui/material";
 import PropTypes from "prop-types";
 import { useOrderStore } from "@/store/orderStore";
 import { useRouter } from "next/router";
-import posthog from "posthog-js";
+
 const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
   const router = useRouter();
   const { reset, setProduct, order } = useOrderStore();
@@ -40,16 +40,6 @@ const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
             reset();
           }
           setProduct(product);
-
-          posthog.capture("add_to_cart", {
-            productId: product._id,
-            productName: product.name,
-            productPrice: product.price,
-            productImage: product.image,
-            productDescription: product.description,
-            productSlug: product.slug,
-          });
-
           router.push("/order");
         }}
         disabled={disabled}

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useOrderStore } from "@/store/orderStore";
-import posthog from "posthog-js";
 import {
   Typography,
   Button,
@@ -60,13 +59,6 @@ export default function SelectVariant() {
                 });
                 // Call API to save variant and advance to next step
                 actionUpdateVariant.mutate(key);
-                posthog.capture("select_variant", {
-                  productId: product._id,
-                  productName: product.name,
-                  productPrice: product.variants?.[key]?.price,
-                  productImage: product.image,
-                  productDescription: product.description,
-                });
               }}
               disabled={actionUpdateVariant.isPending}
               sx={{

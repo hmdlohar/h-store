@@ -1,5 +1,4 @@
 import { useOrderStore } from "@/store/orderStore";
-import posthog from "posthog-js";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import TextCustomizationField from "./TextCustomizationField";
@@ -120,16 +119,6 @@ export default function AddCustomization() {
                 color="primary"
                 disabled={isSubmitting || !isValid}
                 fullWidth
-                onClick={() => {
-                  posthog.capture("add_customization", {
-                    productId: product._id,
-                    productName: product.name,
-                    productPrice: product.price,
-                    productDescription: product.description,
-                    productSlug: product.slug,
-                    values,
-                  });
-                }}
               >
                 Next
               </Button>

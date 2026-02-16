@@ -6,8 +6,6 @@ const config = {
   MONGO_URI,
   JWT_TOKEN,
   MSG91_AUTH_KEY: process.env.MSG91_AUTH_KEY || "",
-  POSTHOG_KEY: process.env.POSTHOG_KEY || "",
-  POSTHOG_HOST: process.env.POSTHOG_HOST || "https://us.i.posthog.com",
   PUBLIC_ROUTES: ["/public"],
 };
 

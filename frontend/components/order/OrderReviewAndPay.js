@@ -8,7 +8,6 @@ import { launchCashfreePayment } from "@/utils/cashfree";
 import { useMutation } from "@tanstack/react-query";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 import { CONTACT_PHONE } from "@/constants";
-import posthog from "posthog-js";
 
 function prettyPrice(amount) {
   return `₹${Number(amount).toLocaleString("en-IN")}`;
@@ -49,17 +48,9 @@ export default function OrderReviewAndPay() {
   const [paying, setPaying] = React.useState(false);
   const [payError, setPayError] = React.useState("");
   const router = useRouter();
+
   // Payment handler
   async function handlePay() {
-    posthog.capture("pay_now", {
-      orderId: order._id,
-      productId: product._id,
-      productName: product.name,
-      productPrice: product.price,
-      productDescription: product.description,
-      productSlug: product.slug,
-      orderId: order._id,
-    });
     setPayError("");
     setPaying(true);
     try {
@@ -74,27 +65,10 @@ export default function OrderReviewAndPay() {
       const paymentResult = await launchCashfreePayment(
         data.payment_session_id
       );
-      posthog.capture("payment_result", {
-        orderId: order._id,
-        productId: product._id,
-        productName: product.name,
-        productPrice: product.price,
-        productDescription: product.description,
-        productSlug: product.slug,
-        orderId: order._id,
-        paymentResult,
-      });
+      
       const result = await actionVerifyCashfreeOrder.mutateAsync();
       console.log(result, "result");
     } catch (ex) {
-      posthog.capture("payment_failed", {
-        orderId: order._id,
-        productId: product._id,
-        productName: product.name,
-        productPrice: product.price,
-        productDescription: product.description,
-      });
-
       setPayError(ex?.message || "Payment failed. Please try again.");
     } finally {
       setPaying(false);
@@ -162,12 +136,11 @@ export default function OrderReviewAndPay() {
           }
           if (c.fieldType === "color" && val) {
             return (
-              <>
+              <React.Fragment key={c.field}>
                 <Typography variant="body2" fontWeight={500}>
                   {c.label}:
                 </Typography>
                 <Chip
-                  key={c.field}
                   label={
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                       <div
@@ -184,7 +157,7 @@ export default function OrderReviewAndPay() {
                     </Box>
                   }
                 />
-              </>
+              </React.Fragment>
             );
           }
           if (c.fieldType === "text" && val) {

@@ -5,9 +5,6 @@ import "@fontsource/roboto/700.css";
 
 import { useEffect } from "react";
 import { Router, useRouter } from "next/router";
-import posthog from "posthog-js";
-import { PostHogProvider } from "posthog-js/react";
-
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "../theme";
@@ -24,30 +21,8 @@ export default function MyApp({ Component, pageProps }) {
     checkAuth();
   }, [authToken]);
 
-  useEffect(() => {
-    if (process.env.NODE_ENV === "production") {
-      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-        api_host: "/ingest",
-        ui_host: "https://us.posthog.com",
-        loaded: (posthog) => {
-          console.log("posthog loaded");
-        },
-        debug: false,
-        capture_pageview: false, // Disable auto page views - tracked server-side
-      });
-      if (user) {
-        posthog.identify(user._id, {
-          username: user.username,
-          mobile: user.mobile,
-          email: user.email,
-        });
-      }
-    }
-  }, [user]);
-
   return (
-    <PostHogProvider client={posthog}>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Component {...pageProps} />
@@ -58,6 +33,5 @@ export default function MyApp({ Component, pageProps }) {
             )} */}
         </ThemeProvider>
       </QueryClientProvider>
-    </PostHogProvider>
   );
 }

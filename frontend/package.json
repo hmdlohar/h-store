@@ -21,8 +21,6 @@
     "hyper-utils": "^1.1.11",
     "marked": "^17.0.2",
     "next": "15.3.8",
-    "posthog-js": "^1.240.6",
-    "posthog-node": "^4.17.1",
     "react": "^19.0.0",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.0.0",

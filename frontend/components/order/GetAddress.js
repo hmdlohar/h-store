@@ -1,5 +1,4 @@
 import { useOrderStore } from "@/store/orderStore";
-import posthog from "posthog-js";
 import { useCommonStore } from "@/store/commonStore";
 import { useState } from "react";
 import { useFormik } from "formik";
@@ -256,17 +255,6 @@ export default function GetAddress() {
                 color="primary"
                 fullWidth
                 disabled={formik.isSubmitting}
-                onClick={() => {
-                  posthog.capture("get_delivery_address", {
-                    formikValues: formik.values,
-                    productId: product._id,
-                    productName: product.name,
-                    productPrice: product.price,
-                    productDescription: product.description,
-                    productSlug: product.slug,
-                    orderId: order._id,
-                  });
-                }}
               >
                 Next
               </Button>
