@@ -9,15 +9,16 @@ router.use(commonMw);
 router.use("/public", public);
 router.use("/products", require("./product"));
 router.use("/order", require("./order"));
+router.use("/reviews", require("./review"));
 router.use(jwtService.jwt_MW);
 router.use("/user", require("./user"));
-router.use("/order", require("./order"));
+router.use("/order", require("./order-authenticated"));
 
 router.use("/admin", (req, res, next) => {
   if (req.user.role !== "admin") {
     return res.sendError(
       "unauthorized",
-      "You are not authorized to access this route"
+      "You are not authorized to access this route",
     );
   }
   next();
