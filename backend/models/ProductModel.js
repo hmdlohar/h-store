@@ -58,6 +58,18 @@ var ProductSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  rating: {
+    type: Number,
+    default: 0,
+  },
+  reviewCount: {
+    type: Number,
+    default: 0,
+  },
+  boughtCount: {
+    type: Number,
+    default: 0,
+  },
   description: {
     // HTML/Markdown with images support
     type: String,

@@ -22,10 +22,10 @@ const ProductItem = ({ product }) => {
   const maxPrice = Math.max(...allPrices);
   const hasPriceRange = maxPrice > minPrice;
 
-  // Mock data to match the requested aesthetics
-  const rating = (Math.random() * (4.8 - 3.5) + 3.5).toFixed(1);
-  const reviewCount = Math.floor(Math.random() * 500) + 50;
-  const boughtCount = Math.floor(Math.random() * 300) + 100;
+  // Social Proof Data (Using real database values)
+  const rating = (product.rating || 0).toFixed(1);
+  const reviewCount = product.reviewCount || 0;
+  const boughtCount = product.boughtCount || 0;
 
   return (
     <Box

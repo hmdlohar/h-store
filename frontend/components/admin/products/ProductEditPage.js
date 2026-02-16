@@ -41,6 +41,9 @@ const defaultProduct = {
   images: [],
   variants: {},
   customizations: [],
+  rating: 0,
+  reviewCount: 0,
+  boughtCount: 0,
 };
 
 const defaultImage = { imagePath: "" };
@@ -92,6 +95,9 @@ export default function ProductEditPage() {
         ...productData,
         price: parseFloat(productData.price) || 0,
         mrp: parseFloat(productData.mrp) || 0,
+        rating: parseFloat(productData.rating) || 0,
+        reviewCount: parseInt(productData.reviewCount) || 0,
+        boughtCount: parseInt(productData.boughtCount) || 0,
       };
 
       if (isNew) {
@@ -326,6 +332,30 @@ export default function ProductEditPage() {
                     label="MRP"
                     value={product.mrp}
                     onChange={(e) => handleChange("mrp", e.target.value)}
+                    type="number"
+                    fullWidth
+                  />
+                </Stack>
+                <Stack direction="row" spacing={2}>
+                  <TextField
+                    label="Rating (0-5)"
+                    value={product.rating}
+                    onChange={(e) => handleChange("rating", e.target.value)}
+                    type="number"
+                    inputProps={{ step: 0.1, min: 0, max: 5 }}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Review Count"
+                    value={product.reviewCount}
+                    onChange={(e) => handleChange("reviewCount", e.target.value)}
+                    type="number"
+                    fullWidth
+                  />
+                  <TextField
+                    label="Bought Past Month (Sales Proof)"
+                    value={product.boughtCount}
+                    onChange={(e) => handleChange("boughtCount", e.target.value)}
                     type="number"
                     fullWidth
                   />
