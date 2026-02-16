@@ -41,13 +41,11 @@ const ProductList = () => {
         {category ? `${category} Gifts` : "All Products"}
       </Typography>
 
-      <Grid container spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
         {products.map((product) => (
-          <Grid item size={{ xs: 6, sm: 6, md: 4, lg: 3 }} key={product._id}>
-            <ProductItem product={product} />
-          </Grid>
+          <ProductItem key={product._id} product={product} />
         ))}
-      </Grid>
+      </Box>
     </Container>
   );
 };

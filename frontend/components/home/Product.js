@@ -66,14 +66,21 @@ const Product = ({ data }) => {
             {name}
           </Typography>
 
-          <Box display="flex" alignItems="center" gap={1} mb={2}>
-            <Typography variant="h6" fontWeight="bold" color="text.primary">
-              ₹{price}
+        {/* Pricing */}
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+            <Typography variant="h4" fontWeight="bold">
+                {(() => {
+                  const variantPrices = Object.values(product.variants || {}).map(v => v.price).filter(p => p != null);
+                  const allPrices = [price, ...variantPrices].filter(p => !isNaN(p));
+                  const minPrice = Math.min(...allPrices);
+                  const maxPrice = Math.max(...allPrices);
+                  return maxPrice > minPrice ? `₹${minPrice.toLocaleString('en-IN')} - ₹${maxPrice.toLocaleString('en-IN')}` : `₹${price.toLocaleString('en-IN')}`;
+                })()}
             </Typography>
-
             {hasDiscount && (
               <Typography
-                variant="body1"
+                variant="h6"
                 color="text.disabled"
                 sx={{ textDecoration: "line-through" }}
               >
@@ -81,49 +88,66 @@ const Product = ({ data }) => {
               </Typography>
             )}
           </Box>
+        </Box>
 
-          {description && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mb: 2 }}
-              dangerouslySetInnerHTML={{
-                __html: description.substring(0, 150) + "...",
-              }}
-            />
-          )}
+        {description && (
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 3, lineHeight: 1.6 }}
+            dangerouslySetInnerHTML={{
+              __html: description.substring(0, 200) + "...",
+            }}
+          />
+        )}
 
-          {/* Additional images */}
-          {images && images.length > 0 && (
-            <Box sx={{ mb: 2 }}>
-              <Grid container spacing={1}>
-                {images.slice(0, 5).map((img, index) => (
-                  <Grid item size={{ xs: 2 }} key={index}>
-                    <EcomImage
-                      path={img.imagePath}
-                      small
-                      alt={`${name} view ${index + 1}`}
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        borderRadius: 4,
-                      }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
+        {/* Additional images row */}
+        {images && images.length > 0 && (
+          <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1 }}>
+              {images.slice(0, 5).map((img, index) => (
+                <Box key={index} sx={{ minWidth: 60, width: 60 }}>
+                  <EcomImage
+                    path={img.imagePath}
+                    small
+                    alt={`${name} view ${index + 1}`}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      borderRadius: 4,
+                      border: "1px solid #eee"
+                    }}
+                  />
+                </Box>
+              ))}
             </Box>
-          )}
+          </Box>
+        )}
 
-          <Button
-            component={NextLink}
-            href={`/p/${slug}`}
-            variant="contained"
-            color="primary"
-            fullWidth
-          >
-            View Details
-          </Button>
+        <Button
+          component={NextLink}
+          href={`/p/${slug}`}
+          variant="contained"
+          sx={{
+            bgcolor: "#FFD814",
+            color: "#0F1111",
+            textTransform: "none",
+            borderRadius: "20px",
+            px: 6,
+            py: 1.2,
+            fontSize: "1rem",
+            fontWeight: 600,
+            boxShadow: "0 2px 5px 0 rgba(213,217,217,.5)",
+            border: "1px solid #FCD200",
+            "&:hover": {
+              bgcolor: "#F7CA00",
+              borderColor: "#F2C200",
+              boxShadow: "0 2px 5px 0 rgba(213,217,217,.5)",
+            },
+          }}
+        >
+          Buy Now
+        </Button>
         </Grid>
       </Grid>
     </Container>

@@ -33,7 +33,6 @@ const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
     >
       <Button
         variant="contained"
-        color="primary"
         fullWidth
         size="large"
         onClick={() => {
@@ -54,6 +53,19 @@ const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
           router.push("/order");
         }}
         disabled={disabled}
+        sx={{
+          bgcolor: "#FFD814",
+          color: "#0F1111",
+          textTransform: "none",
+          borderRadius: "100px",
+          fontWeight: 700,
+          border: "1px solid #FCD200",
+          boxShadow: "0 2px 5px 0 rgba(213,217,217,.5)",
+          "&:hover": {
+            bgcolor: "#F7CA00",
+            borderColor: "#F2C200",
+          },
+        }}
       >
         {label}
       </Button>

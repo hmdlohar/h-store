@@ -11,17 +11,20 @@ const ProductRow = ({ data }) => {
   return (
     <Container sx={{ mb: 4, p: 2 }}>
       <Box sx={{ border: "1px solid #e0e0e0", borderRadius: 2, p: 1 }}>
-        <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-          {title} <Button component={Link} variant="contained" color="primary" href="/products">View All</Button>
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5" fontWeight="bold">
+            {title}
+          </Typography>
+          <Button component={Link} variant="contained" color="primary" href="/products" size="small">
+            View All
+          </Button>
+        </Box>
 
-        <Grid container spacing={2}>
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           {products.map((product) => (
-            <Grid item size={{ xs: 6, sm: 6, md: 3 }} key={product._id}>
-              <ProductItem product={product} />
-            </Grid>
+            <ProductItem key={product._id} product={product} />
           ))}
-        </Grid>
+        </Box>
       </Box>
     </Container>
   );
