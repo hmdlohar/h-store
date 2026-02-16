@@ -8,6 +8,7 @@ import { launchCashfreePayment } from "@/utils/cashfree";
 import { useMutation } from "@tanstack/react-query";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 import { CONTACT_PHONE } from "@/constants";
+import { insightService } from "@/services/InsightService";
 
 function prettyPrice(amount) {
   return `₹${Number(amount).toLocaleString("en-IN")}`;
@@ -51,6 +52,10 @@ export default function OrderReviewAndPay() {
 
   // Payment handler
   async function handlePay() {
+    insightService.trackEvent("pay_now", {
+      orderId: order._id,
+      amount,
+    });
     setPayError("");
     setPaying(true);
     try {
@@ -66,9 +71,18 @@ export default function OrderReviewAndPay() {
         data.payment_session_id
       );
       
+      insightService.trackEvent("payment_result", {
+        orderId: order._id,
+        paymentResult,
+      });
+
       const result = await actionVerifyCashfreeOrder.mutateAsync();
       console.log(result, "result");
     } catch (ex) {
+      insightService.trackEvent("payment_failed", {
+        orderId: order._id,
+        error: ex?.message,
+      });
       setPayError(ex?.message || "Payment failed. Please try again.");
     } finally {
       setPaying(false);

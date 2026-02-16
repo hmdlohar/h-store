@@ -12,6 +12,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/common/ReactQueryClient";
 // import TawkChatWidget from "../common/TawkChatWidget";
 import { checkAuth, useCommonStore } from "@/store/commonStore";
+import { insightService } from "@/services/InsightService";
 
 export default function MyApp({ Component, pageProps }) {
   const { user, authToken } = useCommonStore();
@@ -19,7 +20,19 @@ export default function MyApp({ Component, pageProps }) {
 
   useEffect(() => {
     checkAuth();
+    insightService.init();
   }, [authToken]);
+
+  useEffect(() => {
+    const handleRouteChange = () => {
+      insightService.trackPageView();
+    };
+
+    router.events.on("routeChangeComplete", handleRouteChange);
+    return () => {
+      router.events.off("routeChangeComplete", handleRouteChange);
+    };
+  }, [router.events]);
 
   return (
     <QueryClientProvider client={queryClient}>

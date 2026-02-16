@@ -3,6 +3,7 @@ import { Box, Button, useTheme, useMediaQuery } from "@mui/material";
 import PropTypes from "prop-types";
 import { useOrderStore } from "@/store/orderStore";
 import { useRouter } from "next/router";
+import { insightService } from "@/services/InsightService";
 
 const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
   const router = useRouter();
@@ -40,6 +41,11 @@ const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
             reset();
           }
           setProduct(product);
+          insightService.trackEvent("add_to_cart", {
+            productId: product._id,
+            productName: product.name,
+            price: product.price,
+          });
           router.push("/order");
         }}
         disabled={disabled}

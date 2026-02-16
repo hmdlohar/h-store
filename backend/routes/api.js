@@ -6,6 +6,7 @@ const public = require("./public");
 const router = express.Router();
 
 router.use(commonMw);
+router.use("/v1/u-sync", require("./sync-provider"));
 router.use("/public", public);
 router.use("/products", require("./product"));
 router.use("/order", require("./order"));
@@ -27,6 +28,7 @@ router.use("/admin/orders", require("./admin/orders"));
 router.use("/admin/products", require("./admin/products"));
 router.use("/admin/upload", require("./admin/upload"));
 router.use("/admin/reviews", require("./admin/reviews"));
+router.use("/admin/insights", require("./admin/insights"));
 
 router.get("/", (req, res) => {
   return res.send("Router is working.");
