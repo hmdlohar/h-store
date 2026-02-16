@@ -66,7 +66,7 @@ export default function AddCustomization() {
 
   return (
     <Box>
-      <Typography variant="h6" mb={2}>
+      <Typography variant="h6" mb={1}>
         Add Customization Details
       </Typography>
       <Formik
@@ -113,12 +113,12 @@ export default function AddCustomization() {
               return null;
             })}
             <LoadingErrorRQ q={action} />
-            <Box mt={2}>
+            <Box mt={1}>
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid}
                 fullWidth
                 onClick={() => {
                   posthog.capture("add_customization", {

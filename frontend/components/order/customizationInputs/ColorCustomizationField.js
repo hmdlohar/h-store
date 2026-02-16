@@ -11,8 +11,8 @@ export default function ColorCustomizationField({
   const formik = useFormikContext();
 
   return (
-    <Box my={2}>
-      <Typography gutterBottom>{label}</Typography>
+    <Box my={1}>
+      <Typography gutterBottom sx={{ mb: 0.5 }}>{label}</Typography>
       {formik.touched[field] && formik.errors[field] && (
         <Typography variant="body2" color="error">
           {parseErrorString(formik.errors[field])}

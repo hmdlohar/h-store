@@ -1,4 +1,3 @@
-import AuthGuard from "@/guards/AuthGuard";
 import OrderPage from "./OrderPage";
 import { Dialog, DialogContent, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -24,9 +23,7 @@ export default function BuyNowModal({ open, onClose, product }) {
           <CloseIcon />
         </IconButton>
 
-        <AuthGuard>
-          <OrderPage />
-        </AuthGuard>
+        <OrderPage />
       </DialogContent>
     </Dialog>
   );

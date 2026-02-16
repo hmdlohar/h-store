@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(commonMw);
 router.use("/public", public);
 router.use("/products", require("./product"));
+router.use("/order", require("./order"));
 router.use(jwtService.jwt_MW);
 router.use("/user", require("./user"));
 router.use("/order", require("./order"));

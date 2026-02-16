@@ -1,9 +1,12 @@
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import Confetti from "react-confetti";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { useCommonStore } from "@/store/commonStore";
 
 export default function OrderSuccessPage({ orderId }) {
   const order = useQuery({
@@ -14,18 +17,36 @@ export default function OrderSuccessPage({ orderId }) {
   });
 
   const router = useRouter();
+  const { user } = useCommonStore();
+  const [copied, setCopied] = useState(false);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    }
+  }, []);
+
+  const handleCopyOrderNumber = () => {
+    navigator.clipboard.writeText(order?.data?.orderNumber?.toString() || "");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div>
       <Box sx={{ textAlign: "center", py: 4 }}>
-        {!order?.isLoading && !order?.error && order?.data && (
-          <Confetti
-            width={window.innerWidth}
-            height={window.innerHeight}
-            recycle={false}
-            numberOfPieces={500}
-          />
-        )}
+        {!order?.isLoading &&
+          !order?.error &&
+          order?.data &&
+          windowSize.width > 0 && (
+            <Confetti
+              width={windowSize.width}
+              height={windowSize.height}
+              recycle={false}
+              numberOfPieces={500}
+            />
+          )}
 
         {order?.isLoading ? (
           <CircularProgress />
@@ -36,29 +57,77 @@ export default function OrderSuccessPage({ orderId }) {
         ) : order?.data ? (
           <>
             <CheckCircleIcon
-              sx={{ fontSize: 64, color: "success.main", mb: 2 }}
+              sx={{ fontSize: 80, color: "success.main", mb: 2 }}
             />
 
-            <Typography variant="h4" gutterBottom>
-              Thank you for your order!
+            <Typography variant="h5" gutterBottom fontWeight={600}>
+              Thank You! Your Order is Placed
             </Typography>
 
-            <Typography variant="body1" color="text.secondary" paragraph>
-              Your order has been successfully placed. We'll send you an SMS
-              confirmation shortly.
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              paragraph
+              sx={{ mb: 3 }}
+            >
+              We&apos;ll call you shortly to confirm your order details.
             </Typography>
 
-            <Typography variant="body1" color="text.secondary" paragraph>
-              Order Number: #{order?.data?.orderNumber}
+            <Box
+              sx={{
+                border: "2px dashed",
+                borderColor: "primary.main",
+                borderRadius: 2,
+                p: 3,
+                mb: 3,
+                display: "inline-block",
+                bgcolor: "background.paper",
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Order Number
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography variant="h5" fontWeight={700} color="primary.main">
+                  #{order?.data?.orderNumber}
+                </Typography>
+                <Button
+                  size="small"
+                  onClick={handleCopyOrderNumber}
+                  startIcon={<ContentCopyIcon />}
+                  sx={{ minWidth: "auto" }}
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </Button>
+              </Box>
+            </Box>
+
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Save this order number for tracking your order
             </Typography>
 
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Order Amount:{" "}
+              <strong>₹{order?.data?.amount?.toLocaleString("en-IN")}</strong>
+            </Typography>
+
+            {user && (
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => router.push(`/order/${orderId}`)}
+                sx={{ mt: 2, mr: 1 }}
+              >
+                View Order Details
+              </Button>
+            )}
             <Button
               variant="contained"
               color="primary"
-              onClick={() => router.push(`/order/${orderId}`)}
+              onClick={() => router.push("/")}
               sx={{ mt: 2 }}
             >
-              View Order Details
+              Continue Shopping
             </Button>
           </>
         ) : null}

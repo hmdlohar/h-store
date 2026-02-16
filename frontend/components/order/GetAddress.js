@@ -21,6 +21,7 @@ const AddressSchema = Yup.object().shape({
     .required("Required"),
   home: Yup.string().required("Required"),
   area: Yup.string().required("Required"),
+  email: Yup.string().email("Enter a valid email address").nullable(),
 });
 
 function fetchPinInfo(pincode) {
@@ -57,6 +58,7 @@ export default function GetAddress() {
       }
       return res;
     },
+    enabled: !!user,
   });
 
   const action = useMutation({
@@ -81,6 +83,7 @@ export default function GetAddress() {
       state: order?.deliveryAddress?.state || "",
       home: order?.deliveryAddress?.home || "",
       area: order?.deliveryAddress?.area || "",
+      email: order?.deliveryAddress?.email || user?.email || "",
     },
     validationSchema: AddressSchema,
     onSubmit: (values) => {
@@ -123,12 +126,12 @@ export default function GetAddress() {
   }
 
   return (
-    <Box maxWidth={400} mx="auto" mt={4}>
-      <Typography variant="h6" mb={2}>
+    <Box maxWidth={400} mx="auto" mt={2}>
+      <Typography variant="h6" mb={1}>
         Delivery Address
       </Typography>
       <form onSubmit={formik.handleSubmit} autoComplete="off">
-        <LoadingErrorRQ q={existingAddress} />
+        {user && <LoadingErrorRQ q={existingAddress} />}
         <TextField
           name="pincode"
           label="Pincode"
@@ -234,8 +237,19 @@ export default function GetAddress() {
               helperText={formik.touched.mobile && formik.errors.mobile}
               inputProps={{ maxLength: 10 }}
             />
+            <TextField
+              name="email"
+              label="Email Address (Optional)"
+              fullWidth
+              margin="dense"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={Boolean(formik.touched.email && formik.errors.email)}
+              helperText={formik.touched.email && formik.errors.email}
+            />
             <LoadingErrorRQ q={action} />
-            <Box mt={2}>
+            <Box mt={1}>
               <Button
                 type="submit"
                 variant="contained"

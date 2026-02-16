@@ -1,6 +1,5 @@
 import EcomHead from "@/common/EcomHead";
 import OrderSuccessPage from "@/components/order/order-success/OrderSuccessPage";
-import AuthGuard from "@/guards/AuthGuard";
 import MainLayout from "@/layout/MainLayout";
 import { useRouter } from "next/router";
 
@@ -12,9 +11,7 @@ export default function OrderSuccess() {
       <EcomHead title="Order" />
 
       <MainLayout>
-        <AuthGuard>
-          {orderId && <OrderSuccessPage orderId={orderId} />}
-        </AuthGuard>
+        {orderId && <OrderSuccessPage orderId={orderId} />}
       </MainLayout>
     </>
   );

@@ -209,6 +209,9 @@ export default function OrderReviewAndPay() {
       <Box mb={2}>
         <Typography variant="body2">{address.name}</Typography>
         <Typography variant="body2">{address.mobile}</Typography>
+        {address.email && (
+          <Typography variant="body2">{address.email}</Typography>
+        )}
         <Typography variant="body2">
           {address.home}, {address.area}
         </Typography>
@@ -230,21 +233,47 @@ export default function OrderReviewAndPay() {
         </a>
       </Typography>
 
-      <Button
-        variant="contained"
-        color="primary"
-        size="large"
-        fullWidth
-        disabled={paying || actionVerifyCashfreeOrder.isPending}
-        onClick={handlePay}
+      {/* Sticky Bottom Button Container */}
+      <Box sx={{ height: 100 }} /> {/* Spacer to prevent content overlap */}
+      <Box
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          bgcolor: "background.paper",
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.08)",
+          p: 2,
+          zIndex: 1000,
+          borderTop: "1px solid",
+          borderColor: "divider",
+        }}
       >
-        {paying ? "Processing..." : "Complete The order"}
-      </Button>
-      {payError && (
-        <Typography color="error" mt={2} textAlign="center">
-          {payError}
-        </Typography>
-      )}
+        <Box maxWidth={480} mx="auto">
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            disabled={paying || actionVerifyCashfreeOrder.isPending}
+            onClick={handlePay}
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 600,
+              fontSize: "1rem",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            }}
+          >
+            {paying ? "Processing..." : "Complete The order"}
+          </Button>
+          {payError && (
+            <Typography color="error" mt={1} variant="caption" display="block" textAlign="center">
+              {payError}
+            </Typography>
+          )}
+        </Box>
+      </Box>
       <LoadingErrorRQ query={actionVerifyCashfreeOrder} />
     </Box>
   );

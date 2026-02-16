@@ -79,7 +79,6 @@ var ProductSchema = new mongoose.Schema({
   },
   userID: {
     type: String,
-    required: true,
   },
   pg: {
     type: String,
