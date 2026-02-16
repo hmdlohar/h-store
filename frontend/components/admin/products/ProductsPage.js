@@ -18,7 +18,11 @@ import {
   Avatar,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { 
+  Edit as EditIcon, 
+  Delete as DeleteIcon,
+  RateReview as RateReviewIcon 
+} from "@mui/icons-material";
 
 const getImageUrl = (path) => {
   if (!path) return "/favicon.ico";
@@ -129,6 +133,14 @@ export default function ProductsPage() {
                   </TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <IconButton
+                        size="small"
+                        color="secondary"
+                        onClick={() => router.push(`/admin/reviews?productId=${product._id}`)}
+                        title="View Reviews"
+                      >
+                        <RateReviewIcon />
+                      </IconButton>
                       <IconButton
                         size="small"
                         color="primary"

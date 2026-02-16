@@ -25,6 +25,10 @@ export default function LeftAdminMenu() {
       label: "Users",
       href: "/admin/users",
     },
+    {
+      label: "Reviews",
+      href: "/admin/reviews",
+    },
   ];
 
   return (
