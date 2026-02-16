@@ -70,6 +70,10 @@ var ProductSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  specifications: {
+    type: Object,
+    default: {},
+  },
   description: {
     // HTML/Markdown with images support
     type: String,

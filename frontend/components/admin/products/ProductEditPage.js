@@ -44,6 +44,7 @@ const defaultProduct = {
   rating: 0,
   reviewCount: 0,
   boughtCount: 0,
+  specifications: {},
 };
 
 const defaultImage = { imagePath: "" };
@@ -67,6 +68,8 @@ export default function ProductEditPage() {
   const [variantKey, setVariantKey] = useState("");
   const [variantPrice, setVariantPrice] = useState("");
   const [variantExtra, setVariantExtra] = useState("");
+  const [specKey, setSpecKey] = useState("");
+  const [specValue, setSpecValue] = useState("");
 
   const productQuery = useQuery({
     queryKey: ["admin-product", id],
@@ -242,6 +245,39 @@ export default function ProductEditPage() {
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleAddSpec = () => {
+    if (specKey.trim() && specValue.trim()) {
+      setProduct((prev) => ({
+        ...prev,
+        specifications: {
+          ...prev.specifications,
+          [specKey.trim()]: specValue.trim(),
+        },
+      }));
+      setSpecKey("");
+      setSpecValue("");
+    }
+  };
+
+  const handleRemoveSpec = (key) => {
+    setProduct((prev) => {
+      const newSpecs = { ...prev.specifications };
+      delete newSpecs[key];
+      return { ...prev, specifications: newSpecs };
+    });
+  };
+
+  const handleUpdateSpec = (oldKey, newKey, value) => {
+    setProduct((prev) => {
+      const newSpecs = { ...prev.specifications };
+      if (oldKey !== newKey) {
+        delete newSpecs[oldKey];
+      }
+      newSpecs[newKey] = value;
+      return { ...prev, specifications: newSpecs };
+    });
   };
 
   return (
@@ -513,6 +549,51 @@ export default function ProductEditPage() {
                     </Paper>
                   ))}
                 </Box>
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            {/* Specifications */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Product Specifications
+              </Typography>
+              <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>Add New Specification</Typography>
+                <Stack direction="row" spacing={2}>
+                  <TextField 
+                    label="Label (e.g., Weight)" 
+                    value={specKey} 
+                    onChange={(e) => setSpecKey(e.target.value)} 
+                    size="small"
+                    fullWidth
+                  />
+                  <TextField 
+                    label="Value (e.g., 500g)" 
+                    value={specValue} 
+                    onChange={(e) => setSpecValue(e.target.value)} 
+                    size="small"
+                    fullWidth
+                  />
+                  <Button variant="contained" onClick={handleAddSpec} size="small">Add</Button>
+                </Stack>
+              </Paper>
+              <Stack spacing={1}>
+                {Object.entries(product.specifications || {}).map(([key, value]) => (
+                  <Paper key={key} variant="outlined" sx={{ p: 1, px: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography sx={{ fontWeight: 700, minWidth: 150 }}>{key}:</Typography>
+                    <TextField 
+                      value={value} 
+                      onChange={(e) => handleUpdateSpec(key, key, e.target.value)}
+                      size="small"
+                      fullWidth
+                    />
+                    <IconButton color="error" onClick={() => handleRemoveSpec(key)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Paper>
+                ))}
               </Stack>
             </Box>
 

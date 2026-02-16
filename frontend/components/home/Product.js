@@ -3,6 +3,18 @@ import { Box, Typography, Chip, Grid, Button, Container } from "@mui/material";
 import NextLink from "next/link";
 import EcomImage from "@/common/EcomImage";
 import { useRouter } from "next/router";
+import { marked } from "marked";
+
+// Configure marked options
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
+
+function markdownToTransitionHtml(md) {
+  if (!md) return "";
+  return marked.parse(md);
+}
 
 const Product = ({ data }) => {
   const { product } = data;
@@ -92,11 +104,17 @@ const Product = ({ data }) => {
 
         {description && (
           <Typography
-            variant="body1"
+            variant="body2"
             color="text.secondary"
-            sx={{ mb: 3, lineHeight: 1.6 }}
+            sx={{ 
+                mb: 3, 
+                lineHeight: 1.6,
+                '& ul, & ol': { pl: 2, mb: 1 },
+                '& li': { mb: 0.5 }
+            }}
+            component="div"
             dangerouslySetInnerHTML={{
-              __html: description.substring(0, 200) + "...",
+              __html: markdownToTransitionHtml(description.substring(0, 300) + "..."),
             }}
           />
         )}
