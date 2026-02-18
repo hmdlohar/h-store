@@ -35,7 +35,7 @@ async function fetchIpInfoForSessions() {
   try {
     // Find one session without IP info (newest first - LIFO)
     const session = await TraceSession.findOne({
-      ip: { $exists: true, $ne: null, $ne: "" },
+      ip: { $exists: true, $nin: [null, ""] },
       $or: [
         { ipInfoFetchedAt: { $exists: false } },
         { ipInfoFetchedAt: null }
