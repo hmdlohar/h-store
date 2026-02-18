@@ -15,7 +15,7 @@ function prettyPrice(amount) {
 }
 
 export default function OrderReviewAndPay() {
-  const { order, product, resetOrder } = useOrderStore();
+  const { order, product, resetOrder, setStep, step } = useOrderStore();
 
   const actionVerifyCashfreeOrder = useMutation({
     mutationFn: async () => {
@@ -236,7 +236,21 @@ export default function OrderReviewAndPay() {
           borderColor: "divider",
         }}
       >
-        <Box maxWidth={480} mx="auto">
+        <Box maxWidth={480} mx="auto" display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            size="large"
+            disabled={paying || actionVerifyCashfreeOrder.isPending}
+            onClick={() => setStep(step - 1)}
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 600,
+              fontSize: "1rem",
+            }}
+          >
+            Back
+          </Button>
           <Button
             variant="contained"
             color="primary"

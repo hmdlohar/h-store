@@ -10,8 +10,9 @@ import { ApiService } from "@/services/ApiService";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 
 export default function AddCustomization() {
-  const { order, product, setOrder, setStep } = useOrderStore();
+  const { order, product, setOrder, setStep, step } = useOrderStore();
   const customizations = product?.customizations || [];
+  const hasVariants = Object.keys(product?.variants || {}).length > 0;
   const action = useMutation({
     mutationFn: async (values) => {
       const response = await ApiService.call(
@@ -20,7 +21,7 @@ export default function AddCustomization() {
         values
       );
       setOrder(response);
-      setStep(2);
+      setStep(hasVariants ? 3 : 2);
       return response;
     },
   });
@@ -112,13 +113,20 @@ export default function AddCustomization() {
               return null;
             })}
             <LoadingErrorRQ q={action} />
-            <Box mt={1}>
+            <Box mt={1} display="flex" justifyContent="space-between" gap={2}>
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => setStep(step - 1)}
+                disabled={isSubmitting || (!hasVariants && step <= 1)}
+              >
+                Back
+              </Button>
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 disabled={isSubmitting || !isValid}
-                fullWidth
               >
                 Next
               </Button>

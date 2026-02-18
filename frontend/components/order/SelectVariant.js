@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useOrderStore } from "@/store/orderStore";
+import { useRouter } from "next/router";
 import {
   Typography,
   Button,
@@ -18,7 +19,8 @@ import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 import { ApiService } from "@/services/ApiService";
 
 export default function SelectVariant() {
-  const { product, setStep, setOrder, order } = useOrderStore();
+  const { product, setStep, setOrder, order, step } = useOrderStore();
+  const router = useRouter();
   const [variant, setVariant] = useState(null);
 
   const actionUpdateVariant = useMutation({
@@ -31,7 +33,7 @@ export default function SelectVariant() {
     },
     onSuccess: (response) => {
       setOrder(response);
-      
+      setStep(2);
     },
   });
 
@@ -106,6 +108,15 @@ export default function SelectVariant() {
         ))}
       </List>
       <LoadingErrorRQ q={actionUpdateVariant} />
+      <Box mt={2} display="flex" justifyContent="space-between">
+        <Button
+          variant="outlined"
+          onClick={() => router.back()}
+          disabled={actionUpdateVariant.isPending}
+        >
+          Cancel
+        </Button>
+      </Box>
     </Box>
   );
 }

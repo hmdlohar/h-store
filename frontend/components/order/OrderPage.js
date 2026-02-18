@@ -45,26 +45,39 @@ export default function OrderPage() {
   });
 
   useEffect(() => {
+    // If no product in state (page refreshed), redirect back or to home
+    if (!product && typeof window !== "undefined") {
+      if (window.history.length > 1) {
+        router.back();
+      } else {
+        router.push("/");
+      }
+      return;
+    }
+    
     if (product && !order) {
       actionCreateOrder.mutate();
     } 
   }, []);
 
-  const needToSelectVariant =
-    Object.keys(product?.variants || {}).length > 0 && !order?.info?.variant;
+  const hasVariants = Object.keys(product?.variants || {}).length > 0;
+  const needToSelectVariant = hasVariants && !order?.info?.variant;
 
   const getStepLabel = (stepNumber) => {
-    if (stepNumber === 1) {
-      return needToSelectVariant ? "Select Variant" : "Customize";
-    } else if (stepNumber === 2) {
-      return "Delivery Address";
-    } else if (stepNumber === 3) {
-      return "Review & Pay";
+    if (hasVariants) {
+      if (stepNumber === 1) return "Select Variant";
+      if (stepNumber === 2) return "Customize";
+      if (stepNumber === 3) return "Delivery Address";
+      if (stepNumber === 4) return "Review & Pay";
+    } else {
+      if (stepNumber === 1) return "Customize";
+      if (stepNumber === 2) return "Delivery Address";
+      if (stepNumber === 3) return "Review & Pay";
     }
     return "";
   };
 
-  const totalSteps = 3;
+  const totalSteps = hasVariants ? 4 : 3;
 
   // Calculate current price
   const getCurrentPrice = () => {
@@ -82,13 +95,24 @@ export default function OrderPage() {
 
   const currentPrice = getCurrentPrice();
 
+  // Show loading or redirect if no product
+  if (!product) {
+    return (
+      <Container maxWidth="md" sx={{ py: 8, textAlign: "center" }}>
+        <Typography variant="h6" color="text.secondary">
+          Redirecting...
+        </Typography>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="md">
       {product && order && (
         <>
           <Box sx={{ mb: 2, mt: 1 }}>
             <Stepper activeStep={step - 1} alternativeLabel>
-              {[1, 2, 3].map((stepNum) => (
+              {Array.from({ length: totalSteps }, (_, i) => i + 1).map((stepNum) => (
                 <Step key={stepNum}>
                   <StepLabel>{getStepLabel(stepNum)}</StepLabel>
                 </Step>
@@ -143,19 +167,30 @@ export default function OrderPage() {
 
           <Paper elevation={0} sx={{ p: 0 }}>
             {(() => {
-              switch (step) {
-                case 1:
-                  return needToSelectVariant ? (
-                    <SelectVariant />
-                  ) : (
-                    <AddCustomization />
-                  );
-                case 2:
-                  return <GetAddress />;
-                case 3:
-                  return <OrderReviewAndPay />;
-                default:
-                  return <div>Something is wrong</div>;
+              if (hasVariants) {
+                switch (step) {
+                  case 1:
+                    return <SelectVariant />;
+                  case 2:
+                    return <AddCustomization />;
+                  case 3:
+                    return <GetAddress />;
+                  case 4:
+                    return <OrderReviewAndPay />;
+                  default:
+                    return <div>Something is wrong</div>;
+                }
+              } else {
+                switch (step) {
+                  case 1:
+                    return <AddCustomization />;
+                  case 2:
+                    return <GetAddress />;
+                  case 3:
+                    return <OrderReviewAndPay />;
+                  default:
+                    return <div>Something is wrong</div>;
+                }
               }
             })()}
           </Paper>

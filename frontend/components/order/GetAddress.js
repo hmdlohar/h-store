@@ -40,7 +40,8 @@ function fetchPinInfo(pincode) {
 }
 
 export default function GetAddress() {
-  const { order, setStep, setOrder, product } = useOrderStore();
+  const { order, setStep, setOrder, product, step } = useOrderStore();
+  const hasVariants = Object.keys(product?.variants || {}).length > 0;
   const { user } = useCommonStore();
   const userMobile = user && user.mobile ? user.mobile : "";
 
@@ -68,7 +69,7 @@ export default function GetAddress() {
         values
       );
       setOrder(response);
-      setStep(3);
+      setStep(hasVariants ? 4 : 3);
       return response;
     },
   });
@@ -248,19 +249,26 @@ export default function GetAddress() {
               helperText={formik.touched.email && formik.errors.email}
             />
             <LoadingErrorRQ q={action} />
-            <Box mt={1}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                disabled={formik.isSubmitting}
-              >
-                Next
-              </Button>
-            </Box>
           </>
         )}
+        <Box mt={1} display="flex" justifyContent="space-between" gap={2}>
+          <Button
+            type="button"
+            variant="outlined"
+            onClick={() => setStep(step - 1)}
+            disabled={formik.isSubmitting}
+          >
+            Back
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={formik.isSubmitting || !pinSuccess}
+          >
+            Next
+          </Button>
+        </Box>
       </form>
     </Box>
   );

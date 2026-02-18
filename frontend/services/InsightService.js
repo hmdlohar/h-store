@@ -10,10 +10,12 @@ class InsightService {
     this.flushInterval = 2000; // 2 seconds
     this.stopRecording = null;
     this.rrweb = null;
+    this.isDevelopment = process.env.NODE_ENV === "development";
   }
 
   shouldExclude() {
     if (typeof window === "undefined") return true;
+    if (this.isDevelopment) return true;
     return window.location.pathname.startsWith("/admin");
   }
 
