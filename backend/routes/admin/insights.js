@@ -3,6 +3,7 @@ const router = express.Router();
 const TraceSession = require("../../models/TraceSessionModel");
 const TraceEvent = require("../../models/TraceEventModel");
 const TraceRecording = require("../../models/TraceRecordingModel");
+const { fetchIpInfoForSpecificIP } = require("../../cron/ipFetcher");
 
 router.get("/utm-sources", async (req, res) => {
   try {
@@ -68,6 +69,33 @@ router.get("/recording/:sessionId", async (req, res) => {
     res.sendSuccess(events);
   } catch (err) {
     res.sendError(err.message, "Failed to fetch recording");
+  }
+});
+
+router.post("/fetch-ip-info", async (req, res) => {
+  try {
+    const { ip } = req.body;
+    
+    if (!ip) {
+      return res.sendError("IP address is required");
+    }
+    
+    // Call the IP fetcher function for this specific IP
+    const result = await fetchIpInfoForSpecificIP(ip);
+    
+    if (result.error) {
+      return res.sendError(result.error, "Failed to fetch IP info");
+    }
+    
+    res.sendSuccess({
+      ip: ip,
+      processed: result.processed,
+      country: result.country,
+      skipped: result.skipped || false,
+      reason: result.reason || null
+    });
+  } catch (err) {
+    res.sendError(err.message, "Failed to fetch IP info");
   }
 });
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import AdminLayout from "@/layout/admin/AdminLayout";
 import { 
   Typography, 
@@ -19,11 +19,15 @@ import {
   Tooltip,
   TextField,
   IconButton,
-  Autocomplete
+  Autocomplete,
+  Snackbar,
+  Alert,
+  CircularProgress
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { useQuery } from "@tanstack/react-query";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
 
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
@@ -44,6 +48,8 @@ export default function AdminInsightsIndex() {
   } = useInsightsFilterStore();
   
   const [sortBy, sortOrder] = sortOption.split('-');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [fetchingIps, setFetchingIps] = useState(new Set());
   
   const utmSources = useQuery({
     queryKey: ["admin-utm-sources"],
@@ -59,6 +65,43 @@ export default function AdminInsightsIndex() {
       if (maxViews !== '') url += `&maxViews=${maxViews}`;
       return ApiService.call(url);
     },
+  });
+  
+  const fetchIpMutation = useMutation({
+    mutationFn: async (ip) => {
+      setFetchingIps(prev => new Set(prev).add(ip));
+      const result = await ApiService.call("/api/admin/insights/fetch-ip-info", "post", { ip });
+      setFetchingIps(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(ip);
+        return newSet;
+      });
+      return result;
+    },
+    onSuccess: (data) => {
+      if (data.skipped) {
+        setSnackbar({
+          open: true,
+          message: `IP ${data.ip} skipped: ${data.reason}`,
+          severity: 'warning'
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: `Successfully fetched IP info for ${data.ip} (${data.country}) - Updated ${data.processed} sessions`,
+          severity: 'success'
+        });
+        // Refetch sessions to show updated data
+        sessions.refetch();
+      }
+    },
+    onError: (error) => {
+      setSnackbar({
+        open: true,
+        message: `Failed to fetch IP info: ${error.message}`,
+        severity: 'error'
+      });
+    }
   });
 
   return (
@@ -200,7 +243,44 @@ export default function AdminInsightsIndex() {
                         </Box>
                       </Tooltip>
                     </TableCell>
-                    <TableCell>{row.ip}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {row.ip}
+                        <Tooltip title={row.ipInfo?.country ? `Location: ${row.ipInfo.city || ''}, ${row.ipInfo.country}` : "Fetch IP location info"}>
+                          <IconButton
+                            size="small"
+                            onClick={() => fetchIpMutation.mutate(row.ip)}
+                            disabled={fetchingIps.has(row.ip)}
+                          >
+                            {fetchingIps.has(row.ip) ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <LocationOnIcon fontSize="small" color={row.ipInfo?.country ? "success" : "action"} />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                        {row.ipInfo?.country && (
+                          <Tooltip title={`${row.ipInfo.city || ''}, ${row.ipInfo.region || ''}, ${row.ipInfo.country}`}>
+                            <Chip
+                              size="small"
+                              label={row.ipInfo.countryCode || row.ipInfo.country}
+                              variant="outlined"
+                              color="success"
+                            />
+                          </Tooltip>
+                        )}
+                        {row.ipInfo?.error && (
+                          <Tooltip title={row.ipInfo.error}>
+                            <Chip
+                              size="small"
+                              label="Error"
+                              color="error"
+                              variant="outlined"
+                            />
+                          </Tooltip>
+                        )}
+                      </Box>
+                    </TableCell>
                     <TableCell>
                       <Typography variant="body2">{row.device || 'Desktop'}</Typography>
                       <Typography variant="caption" color="text.secondary">{row.os}</Typography>
@@ -236,6 +316,21 @@ export default function AdminInsightsIndex() {
           </TableContainer>
         )}
       </Box>
+      
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </AdminLayout>
   );
 }
