@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server';
 
 export async function middleware(request) {
   const { cookies, nextUrl } = request;
+  
+  // Extract IP and use it as session identifier for consistent tracking
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
   let sessionId = cookies.get('tsid')?.value;
   let isNewSession = false;
 
-  if (!sessionId) {
-    sessionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  // Use IP as session ID to group same IP users together
+  if (!sessionId || sessionId !== ip) {
+    sessionId = ip;
     isNewSession = true;
   }
 
@@ -23,8 +27,7 @@ export async function middleware(request) {
   // Always track the hit (initial request trace)
   // This ensures we catch clicks even if page doesn't load
   const userAgent = request.headers.get('user-agent') || '';
-  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '';
-  
+   
   // Extract UTM params
   const utm = {
     source: nextUrl.searchParams.get('utm_source'),

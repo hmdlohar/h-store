@@ -11,34 +11,172 @@ import {
   Paper, 
   Button, 
   Chip,
-  Box
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Tooltip,
+  TextField,
+  IconButton,
+  Autocomplete
 } from "@mui/material";
+import ClearIcon from "@mui/icons-material/Clear";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { useQuery } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
-import { useRouter } from "next/router";
+
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
+import DateDisplay from "@/components/common/DateDisplay";
+import { useInsightsFilterStore } from "@/store/insightsFilterStore";
 
 export default function AdminInsightsIndex() {
-  const router = useRouter();
+  const { 
+    sortOption, 
+    utmSource, 
+    minViews, 
+    maxViews, 
+    setSortOption, 
+    setUtmSource, 
+    setMinViews, 
+    setMaxViews,
+    resetFilters 
+  } = useInsightsFilterStore();
+  
+  const [sortBy, sortOrder] = sortOption.split('-');
+  
+  const utmSources = useQuery({
+    queryKey: ["admin-utm-sources"],
+    queryFn: () => ApiService.call("/api/admin/insights/utm-sources"),
+  });
+  
   const sessions = useQuery({
-    queryKey: ["admin-sessions"],
-    queryFn: () => ApiService.call("/api/admin/insights/sessions"),
+    queryKey: ["admin-sessions", sortBy, sortOrder, utmSource, minViews, maxViews],
+    queryFn: () => {
+      let url = `/api/admin/insights/sessions?sortBy=${sortBy}&order=${sortOrder}`;
+      if (utmSource && utmSource !== '') url += `&utmSource=${utmSource}`;
+      if (minViews !== '') url += `&minViews=${minViews}`;
+      if (maxViews !== '') url += `&maxViews=${maxViews}`;
+      return ApiService.call(url);
+    },
   });
 
   return (
     <AdminLayout>
       <Box sx={{ p: 2 }}>
-        <Typography variant="h5" mb={3}>
-          User Sessions & Insights
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h5">
+              User Sessions & Insights
+            </Typography>
+            {sessions.data && (
+              <Chip 
+                size="small" 
+                label={`${sessions.data.length} results`}
+                color="default"
+                variant="outlined"
+              />
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tooltip title="Refresh data">
+              <IconButton 
+                size="small" 
+                onClick={() => {
+                  utmSources.refetch();
+                  sessions.refetch();
+                }}
+                disabled={sessions.isLoading || sessions.isFetching}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortOption}
+                label="Sort By"
+                onChange={(e) => setSortOption(e.target.value)}
+              >
+                <MenuItem value="createdAt-desc">Created: Newest First</MenuItem>
+                <MenuItem value="createdAt-asc">Created: Oldest First</MenuItem>
+                <MenuItem value="updatedAt-desc">Updated: Newest First</MenuItem>
+                <MenuItem value="updatedAt-asc">Updated: Oldest First</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
+        
+        {/* Filters */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Autocomplete
+            size="small"
+            sx={{ minWidth: 200, maxWidth: 250 }}
+            options={utmSources.data || []}
+            value={utmSource || null}
+            onChange={(e, newValue) => setUtmSource(newValue || '')}
+            renderInput={(params) => (
+              <TextField 
+                {...params} 
+                label="UTM Source" 
+                placeholder="Select or type..."
+              />
+            )}
+            freeSolo
+            clearOnEscape
+            loading={utmSources.isLoading}
+          />
+          
+          <TextField
+            size="small"
+            label="Min Views"
+            type="number"
+            value={minViews}
+            onChange={(e) => setMinViews(e.target.value)}
+            sx={{ width: 100 }}
+            InputProps={{
+              endAdornment: minViews !== '' && (
+                <IconButton size="small" onClick={() => setMinViews('')}>
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              )
+            }}
+          />
+          
+          <TextField
+            size="small"
+            label="Max Views"
+            type="number"
+            value={maxViews}
+            onChange={(e) => setMaxViews(e.target.value)}
+            sx={{ width: 100 }}
+            InputProps={{
+              endAdornment: maxViews !== '' && (
+                <IconButton size="small" onClick={() => setMaxViews('')}>
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              )
+            }}
+          />
+          
+          {(utmSource || minViews || maxViews) && (
+            <Button 
+              size="small" 
+              variant="outlined" 
+              onClick={resetFilters}
+              startIcon={<ClearIcon />}
+            >
+              Reset
+            </Button>
+          )}
+        </Box>
         <LoadingErrorRQ q={sessions} />
         {sessions.data && (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Session ID</TableCell>
+                  <TableCell>Dates</TableCell>
                   <TableCell>IP</TableCell>
                   <TableCell>Device / OS</TableCell>
                   <TableCell>Views</TableCell>
@@ -50,12 +188,17 @@ export default function AdminInsightsIndex() {
                 {sessions.data.map((row) => (
                   <TableRow key={row.sessionId}>
                     <TableCell>
-                      {new Date(row.createdAt).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>
-                        {row.sessionId}
-                      </Typography>
+                      <Tooltip 
+                        title={`Created: ${new Date(row.createdAt).toLocaleString()}${row.updatedAt && row.updatedAt !== row.createdAt ? `\nUpdated: ${new Date(row.updatedAt).toLocaleString()}` : ''}`} 
+                        arrow
+                      >
+                        <Box>
+                          <DateDisplay date={row.createdAt} showDate="ago" variant="body2" sx={{ display: 'block' }} />
+                          {row.updatedAt && row.updatedAt !== row.createdAt && (
+                            <DateDisplay date={row.updatedAt} showDate="ago" variant="body2" color="primary.main" sx={{ display: 'block' }} />
+                          )}
+                        </Box>
+                      </Tooltip>
                     </TableCell>
                     <TableCell>{row.ip}</TableCell>
                     <TableCell>
@@ -73,13 +216,18 @@ export default function AdminInsightsIndex() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button 
-                        size="small" 
-                        variant="contained" 
-                        onClick={() => router.push(`/admin/insights/${row.sessionId}`)}
+                      <a 
+                        href={`/admin/insights/${row.sessionId}`}
+                        style={{ textDecoration: 'none' }}
                       >
-                        View Recording
-                      </Button>
+                        <Button 
+                          size="small" 
+                          variant="contained" 
+                          component="span"
+                        >
+                          View Recording
+                        </Button>
+                      </a>
                     </TableCell>
                   </TableRow>
                 ))}
