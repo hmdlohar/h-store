@@ -214,4 +214,55 @@ router.post("/verify-cashfree-order", async (req, res) => {
   }
 });
 
+router.get("/:orderID", async (req, res) => {
+  try {
+    const orders = await OrderModel.aggregate([
+      {
+        $match: { _id: req.params.orderID },
+      },
+
+      { $unwind: "$items" },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.productId",
+          foreignField: "_id",
+          pipeline: [
+            {
+              $project: {
+                mainImage: 1,
+                name: 1,
+                customizations: 1,
+              },
+            },
+          ],
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      {
+        $group: {
+          _id: "$_id",
+          userID: { $first: "$userID" },
+          status: { $first: "$status" },
+          amount: { $first: "$amount" },
+          deliveryAddress: { $first: "$deliveryAddress" },
+          pg: { $first: "$pg" },
+          pgOrderID: { $first: "$pgOrderID" },
+          createdAt: { $first: "$createdAt" },
+          orderNumber: { $first: "$orderNumber" },
+          items: { $push: "$items" },
+          product: { $first: "$product" },
+        },
+      },
+    ]);
+    if (orders.length === 0) {
+      return res.sendError("orderNotFound", "Order not found");
+    }
+    res.sendSuccess(orders[0]);
+  } catch (ex) {
+    res.sendError(ex, parseErrorString(ex));
+  }
+});
+
 module.exports = router;
