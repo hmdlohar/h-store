@@ -1,6 +1,8 @@
 import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
+  const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID || "3168601370008522";
+  
   return (
     <Html lang="en">
       <Head>
@@ -16,13 +18,23 @@ export default function Document() {
                 t.src=v;s=b.getElementsByTagName(e)[0];
                 s.parentNode.insertBefore(t,s)}(window, document,'script',
                 'https://connect.facebook.net/en_US/fbevents.js');
-                fbq('init', '1211664813599306'); 
+                fbq('init', '${pixelId}'); 
                 fbq('track', 'PageView');
               `,
           }}
         />
       </Head>
       <body>
+        {/* Meta Pixel noscript fallback */}
+        <noscript>
+          <img 
+            height="1" 
+            width="1" 
+            style={{ display: 'none' }}
+            src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`}
+            alt=""
+          />
+        </noscript>
         <Main />
         <NextScript />
       </body>
