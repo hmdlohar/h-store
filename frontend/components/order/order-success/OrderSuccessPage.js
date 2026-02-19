@@ -7,6 +7,7 @@ import Confetti from "react-confetti";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useCommonStore } from "@/store/commonStore";
+import { fbPixel } from "@/services/FacebookPixelService";
 
 export default function OrderSuccessPage({ orderId }) {
   const order = useQuery({
@@ -26,6 +27,24 @@ export default function OrderSuccessPage({ orderId }) {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     }
   }, []);
+
+  // Track Purchase event when order is loaded
+  useEffect(() => {
+    if (order.data && !order.isLoading) {
+      const orderData = order.data;
+      const items = orderData.items || [];
+      
+      fbPixel.purchase({
+        content_ids: items.map(item => item.productId),
+        content_name: items.map(item => item.productName).join(", ") || "Order",
+        content_type: "product",
+        value: orderData.finalAmount || orderData.amount || 0,
+        currency: "INR",
+        num_items: items.length,
+        order_id: orderData._id,
+      });
+    }
+  }, [order.data, order.isLoading]);
 
   const handleCopyOrderNumber = () => {
     navigator.clipboard.writeText(order?.data?.orderNumber?.toString() || "");

@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { useOrderStore } from "@/store/orderStore";
 import { useRouter } from "next/router";
 import { insightService } from "@/services/InsightService";
+import { fbPixel } from "@/services/FacebookPixelService";
 
 const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
   const router = useRouter();
@@ -41,6 +42,16 @@ const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
             reset();
           }
           setProduct(product);
+          
+          // Track AddToCart event
+          fbPixel.addToCart({
+            content_ids: [product._id],
+            content_name: product.name,
+            content_type: "product",
+            value: product.price,
+            currency: "INR",
+          });
+          
           insightService.trackEvent("add_to_cart", {
             productId: product._id,
             productName: product.name,

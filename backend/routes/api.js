@@ -11,6 +11,7 @@ router.use("/public", public);
 router.use("/products", require("./product"));
 router.use("/order", require("./order"));
 router.use("/reviews", require("./review"));
+router.use("/conversions", require("./conversions"));
 router.use(jwtService.jwt_MW);
 router.use("/user", require("./user"));
 router.use("/order", require("./order-authenticated"));

@@ -16,6 +16,8 @@ import ProductReviews from "./ProductReviews";
 import NextLink from "next/link";
 
 import { marked } from "marked";
+import { fbPixel } from "@/services/FacebookPixelService";
+import { useEffect } from "react";
 
 // Configure marked options
 marked.setOptions({
@@ -38,9 +40,23 @@ const ProductDetailPage = ({ product }) => {
     rating,
     reviewCount,
     boughtCount,
+    _id,
   } = product;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  // Track ViewContent when product loads
+  useEffect(() => {
+    if (product && _id) {
+      fbPixel.viewContent({
+        content_ids: [_id],
+        content_name: name,
+        content_type: "product",
+        value: price,
+        currency: "INR",
+      });
+    }
+  }, [product, _id, name, price]);
 
   const discount = Math.round(((mrp - price) / mrp) * 100);
   const displayRating = (rating || 0).toFixed(1);

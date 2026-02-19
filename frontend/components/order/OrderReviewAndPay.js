@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 import { CONTACT_PHONE } from "@/constants";
 import { insightService } from "@/services/InsightService";
+import { fbPixel } from "@/services/FacebookPixelService";
 
 function prettyPrice(amount) {
   return `₹${Number(amount).toLocaleString("en-IN")}`;
@@ -56,6 +57,17 @@ export default function OrderReviewAndPay() {
       orderId: order._id,
       amount,
     });
+    
+    // Track InitiateCheckout event
+    fbPixel.initiateCheckout({
+      content_ids: [product._id],
+      content_name: product.name,
+      content_type: "product",
+      value: amount,
+      currency: "INR",
+      num_items: 1,
+    });
+    
     setPayError("");
     setPaying(true);
     try {

@@ -9,6 +9,7 @@ const ImageKitService = require("../services/ImageKitService");
 const multer = require("multer");
 const enums = require("../enums");
 const { parseErrorString } = require("hyper-utils");
+const conversionsApiService = require("../services/ConversionsApiService");
 const upload = multer({ storage: multer.memoryStorage() }); // or diskStorage
 
 router.post("/", async (req, res) => {
@@ -180,6 +181,32 @@ router.post("/verify-cashfree-order", async (req, res) => {
     });
     await order.save();
     
+    // Send Purchase event to Conversions API (server-side backup)
+    const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"];
+    const fbp = req.cookies?._fbp;
+    
+    const eventData = {
+      eventName: "Purchase",
+      eventId: `purchase-${orderId}-${Date.now()}`,
+      params: {
+        value: order.finalAmount || order.amount || 0,
+        currency: "INR",
+        order_id: orderId,
+        content_ids: order.items?.map(item => item.productId?.toString()) || [],
+        content_name: order.items?.map(item => item.productName).join(", ") || "Order",
+        content_type: "product",
+        num_items: order.items?.length || 0,
+      },
+      url: `${process.env.FRONTEND_URL || "https://your-domain.com"}/order-success/${orderId}`,
+      fbp,
+      userId: order.userID,
+    };
+    
+    // Fire and forget - don't delay the response
+    conversionsApiService.sendEvent(eventData, clientIp, userAgent).catch(err => {
+      console.error("Failed to send Purchase event to Conversions API:", err.message);
+    });
     
     return res.sendSuccess(order, "Order paid successfully");
   } catch (ex) {
