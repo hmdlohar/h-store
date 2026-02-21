@@ -5,10 +5,51 @@ import { useOrderStore } from "@/store/orderStore";
 import { useRouter } from "next/router";
 import { insightService } from "@/services/InsightService";
 import { fbPixel } from "@/services/FacebookPixelService";
+import { ApiService } from "@/services/ApiService";
 
 const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
   const router = useRouter();
-  const { reset, setProduct, order } = useOrderStore();
+  const { reset, setProduct, setOrder, order } = useOrderStore();
+
+  const handleBuyNow = async () => {
+    if (product?._id !== order?.items?.[0]?.productId) {
+      reset();
+    }
+    setProduct(product);
+    
+    fbPixel.addToCart({
+      content_ids: [product._id],
+      content_name: product.name,
+      content_type: "product",
+      value: product.price,
+      currency: "INR",
+    });
+    
+    insightService.trackEvent("add_to_cart", {
+      productId: product._id,
+      productName: product.name,
+      price: product.price,
+    });
+
+    try {
+      const response = await ApiService.call("/api/order", "post", {
+        items: [
+          {
+            productId: product._id,
+            productName: product.name,
+            quantity: 1,
+            price: product.price,
+            amount: product.price,
+          },
+        ],
+      });
+      setOrder(response);
+      router.push(`/checkout/${response._id}`);
+    } catch (error) {
+      console.error("Failed to create order:", error);
+      router.push("/order");
+    }
+  };
 
   return (
     <Box
@@ -37,28 +78,7 @@ const AddToCartAction = ({ product, disabled, label = "Buy Now" }) => {
         variant="contained"
         fullWidth
         size="large"
-        onClick={() => {
-          if (product?._id !== order?.items?.[0]?.productId) {
-            reset();
-          }
-          setProduct(product);
-          
-          // Track AddToCart event
-          fbPixel.addToCart({
-            content_ids: [product._id],
-            content_name: product.name,
-            content_type: "product",
-            value: product.price,
-            currency: "INR",
-          });
-          
-          insightService.trackEvent("add_to_cart", {
-            productId: product._id,
-            productName: product.name,
-            price: product.price,
-          });
-          router.push("/order");
-        }}
+        onClick={handleBuyNow}
         disabled={disabled}
         sx={{
           bgcolor: "#FFD814",

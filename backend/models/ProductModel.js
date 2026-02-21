@@ -16,6 +16,7 @@ var ProductSchema = new mongoose.Schema({
       fieldType: String, // text, color, image
       field: String, // Identifier
       label: String, // Label displayed to customer
+      description: String, // Description shown to customer
       required: Boolean,
       options: [
         {

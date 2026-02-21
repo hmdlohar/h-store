@@ -3,14 +3,13 @@ import { useCommonStore } from "@/store/commonStore";
 import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Box, TextField, Button, Typography, Paper, Divider, CircularProgress } from "@mui/material";
+import { Box, TextField, Typography, Paper, CircularProgress } from "@mui/material";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 import { ApiService } from "@/services/ApiService";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
-import PhoneIcon from "@mui/icons-material/Phone";
-import EmailIcon from "@mui/icons-material/Email";
+import OrderStepWrapper from "./OrderStepWrapper";
 
 const PINCODE_API = "https://api.postalpincode.in/pincode/";
 
@@ -47,8 +46,7 @@ function fetchPinInfo(pincode) {
 }
 
 export default function GetAddress() {
-  const { order, setStep, setOrder, product, step } = useOrderStore();
-  const hasVariants = Object.keys(product?.variants || {}).length > 0;
+  const { order, setStep, setOrder, product, step, hasVariants } = useOrderStore();
   const { user } = useCommonStore();
   const userMobile = user && user.mobile ? user.mobile : "";
   
@@ -136,16 +134,23 @@ export default function GetAddress() {
 
   const showAddressFields = pinSuccess && pinData && !pincodeManual;
 
+  const handleBack = () => setStep(step - 1);
+  const handleContinue = () => formik.handleSubmit();
+  const canContinue = formik.isValid && !formik.isSubmitting;
+  const showBack = step > 1;
+
   return (
-    <Box maxWidth={500} mx="auto" mt={2}>
-      <Typography variant="h6" mb={3} fontWeight={600}>
-        Where should we deliver?
-      </Typography>
-      
+    <OrderStepWrapper
+      title="Where should we deliver?"
+      onBack={handleBack}
+      onContinue={handleContinue}
+      continueDisabled={!canContinue}
+      continueLoading={formik.isSubmitting}
+      showBack={showBack}
+    >
       <form onSubmit={formik.handleSubmit} autoComplete="off">
         {user && <LoadingErrorRQ q={existingAddress} />}
         
-        {/* Contact Information Section */}
         <Paper elevation={0} sx={{ p: 2, mb: 2, bgcolor: "#f8f9fa", borderRadius: 2 }}>
           <Box display="flex" alignItems="center" gap={1} mb={2}>
             <PersonIcon sx={{ color: "primary.main" }} />
@@ -202,7 +207,6 @@ export default function GetAddress() {
           />
         </Paper>
 
-        {/* Delivery Address Section */}
         <Paper elevation={0} sx={{ p: 2, mb: 2, bgcolor: "#f8f9fa", borderRadius: 2 }}>
           <Box display="flex" alignItems="center" gap={1} mb={2}>
             <LocationOnIcon sx={{ color: "primary.main" }} />
@@ -273,9 +277,9 @@ export default function GetAddress() {
             <Typography variant="body2" color="text.secondary">
               {pincodeManual ? "Enter city manually" : "Or enter manually:"}
             </Typography>
-            <Button
-              size="small"
-              variant="text"
+            <Typography
+              component="button"
+              variant="body2"
               onClick={() => {
                 setPincodeManual(!pincodeManual);
                 if (pincodeManual) {
@@ -283,10 +287,18 @@ export default function GetAddress() {
                   formik.setFieldValue("state", "", false);
                 }
               }}
-              sx={{ textTransform: "none", fontSize: "0.8rem" }}
+              sx={{ 
+                textDecoration: 'underline', 
+                cursor: 'pointer', 
+                color: 'primary.main',
+                border: 'none',
+                bgcolor: 'transparent',
+                p: 0,
+                font: 'inherit'
+              }}
             >
               {pincodeManual ? "Auto-detect from pincode" : "Enter manually"}
-            </Button>
+            </Typography>
           </Box>
 
           {(showAddressFields || pincodeManual) && (
@@ -324,47 +336,7 @@ export default function GetAddress() {
         </Paper>
 
         <LoadingErrorRQ q={action} />
-        
-        <Box mt={3} display="flex" gap={2}>
-          <Button
-            type="button"
-            variant="outlined"
-            onClick={() => setStep(step - 1)}
-            disabled={formik.isSubmitting || (!hasVariants && step <= 1)}
-            sx={{
-              py: 1.5,
-              px: 3,
-              borderRadius: "100px",
-              fontWeight: 600,
-              flex: 1,
-            }}
-          >
-            Back
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={formik.isSubmitting}
-            sx={{
-              py: 1.5,
-              px: 4,
-              borderRadius: "100px",
-              fontWeight: 700,
-              flex: 2,
-              bgcolor: "#FFD814",
-              color: "#0F1111",
-              border: "1px solid #FCD200",
-              boxShadow: "0 2px 5px 0 rgba(213,217,217,.5)",
-              "&:hover": {
-                bgcolor: "#F7CA00",
-                borderColor: "#F2C200",
-              },
-            }}
-          >
-            {formik.isSubmitting ? "Saving..." : "Continue"}
-          </Button>
-        </Box>
       </form>
-    </Box>
+    </OrderStepWrapper>
   );
 }

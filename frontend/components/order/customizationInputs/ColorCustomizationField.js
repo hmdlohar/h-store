@@ -5,13 +5,14 @@ import { parseErrorString } from "hyper-utils";
 export default function ColorCustomizationField({
   field,
   label,
+  description,
   required,
   options,
 }) {
   const formik = useFormikContext();
 
   return (
-    <Box my={1}>
+    <Box my={2}>
       <Typography gutterBottom sx={{ mb: 0.5 }}>{label}</Typography>
       {formik.touched[field] && formik.errors[field] && (
         <Typography variant="body2" color="error">
@@ -51,6 +52,11 @@ export default function ColorCustomizationField({
           />
         ))}
       </Box>
+      {description && (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+          {description}
+        </Typography>
+      )}
     </Box>
   );
 }

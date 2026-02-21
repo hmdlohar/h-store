@@ -4,15 +4,19 @@ import * as Yup from "yup";
 import TextCustomizationField from "./TextCustomizationField";
 import ColorCustomizationField from "./ColorCustomizationField";
 import ImageCustomizationField from "./ImageCustomizationField";
-import { Button, Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
+import OrderStepWrapper from "../OrderStepWrapper";
+import { useRef, useState } from "react";
 
 export default function AddCustomization() {
-  const { order, product, setOrder, setStep, step } = useOrderStore();
+  const { order, product, setOrder, setStep, step, hasVariants } = useOrderStore();
   const customizations = product?.customizations || [];
-  const hasVariants = Object.keys(product?.variants || {}).length > 0;
+  const formRef = useRef();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const action = useMutation({
     mutationFn: async (values) => {
       const response = await ApiService.call(
@@ -64,28 +68,50 @@ export default function AddCustomization() {
     }
   });
 
+  const handleBack = () => setStep(step - 1);
+
+  const handleContinue = () => {
+    if (formRef.current) {
+      formRef.current.handleSubmit();
+    }
+  };
+
+  const handleSubmit = (values, { setSubmitting }) => {
+    setIsSubmitting(true);
+    action.mutate(values, {
+      onSettled: () => {
+        setSubmitting(false);
+        setIsSubmitting(false);
+      },
+    });
+  };
+
   return (
-    <Box>
-      <Typography variant="h6" mb={1}>
-        Add Customization Details
-      </Typography>
+    <OrderStepWrapper
+      title="Customize Your Order"
+      onBack={handleBack}
+      onContinue={handleContinue}
+      showBack={true}
+      backText="Back"
+      continueText="Continue"
+      continueLoading={isSubmitting}
+    >
       <Formik
+        innerRef={formRef}
         initialValues={initial}
         validationSchema={Yup.object().shape(shape)}
-        onSubmit={(values) => {
-          return action.mutateAsync(values);
-        }}
+        onSubmit={handleSubmit}
       >
-        {({ isSubmitting, isValid, values, errors }) => (
+        {({ isValid }) => (
           <Form>
             {customizations.map((c) => {
-              // console.log(values, errors, "form");
               if (c.fieldType === "text" || c.fieldType === "text_alphabet")
                 return (
                   <TextCustomizationField
                     key={c.field}
                     field={c.field}
                     label={c.label}
+                    description={c.description}
                     required={c.required}
                     info={c.info}
                     alphabetOnly={c.fieldType === "text_alphabet"}
@@ -97,6 +123,7 @@ export default function AddCustomization() {
                     key={c.field}
                     field={c.field}
                     label={c.label}
+                    description={c.description}
                     required={c.required}
                     options={c.options}
                   />
@@ -107,51 +134,18 @@ export default function AddCustomization() {
                     key={c.field}
                     field={c.field}
                     label={c.label}
+                    description={c.description}
                     required={c.required}
                     imageOptions={c.imageOptions}
                   />
                 );
               return null;
             })}
+            
             <LoadingErrorRQ q={action} />
-            <Box mt={1} display="flex" justifyContent="space-between" gap={2}>
-              <Button
-                type="button"
-                variant="outlined"
-                onClick={() => setStep(step - 1)}
-                disabled={isSubmitting || (!hasVariants && step <= 1)}
-                sx={{
-                  py: 1.5,
-                  borderRadius: "100px",
-                  fontWeight: 600,
-                }}
-              >
-                Back
-              </Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={isSubmitting || !isValid}
-                sx={{
-                  py: 1.5,
-                  borderRadius: "100px",
-                  fontWeight: 700,
-                  bgcolor: "#FFD814",
-                  color: "#0F1111",
-                  border: "1px solid #FCD200",
-                  boxShadow: "0 2px 5px 0 rgba(213,217,217,.5)",
-                  "&:hover": {
-                    bgcolor: "#F7CA00",
-                    borderColor: "#F2C200",
-                  },
-                }}
-              >
-                Next
-              </Button>
-            </Box>
           </Form>
         )}
       </Formik>
-    </Box>
+    </OrderStepWrapper>
   );
 }

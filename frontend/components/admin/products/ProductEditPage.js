@@ -646,6 +646,15 @@ export default function ProductEditPage() {
                             }
                             fullWidth
                           />
+                          <TextField
+                            label="Description (shown to user)"
+                            value={cust.description || ""}
+                            onChange={(e) =>
+                              handleUpdateCustomization(index, "description", e.target.value)
+                            }
+                            fullWidth
+                            placeholder="e.g., Enter name as you want it on the product"
+                          />
                         </Stack>
                         <FormControlLabel
                           control={

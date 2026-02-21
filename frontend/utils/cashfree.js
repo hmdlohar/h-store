@@ -32,7 +32,7 @@ export async function launchCashfreePayment(sessionId) {
         reject(result.error);
       }
       if (result.redirect) {
-        // This will be true when the payment redirection page couldnt be opened in the same window
+        // This will be true when the payment redirection page couldn't be opened in the same window
         // This is an exceptional case only when the page is opened inside an inAppBrowser
         // In this case the customer will be redirected to return url once payment is completed
         console.log("Payment will be redirected");

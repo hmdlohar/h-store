@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useOrderStore } from "@/store/orderStore";
 import {
   Typography,
-  Button,
   Box,
   Chip,
 } from "@mui/material";
@@ -11,9 +10,10 @@ import { prettyPrice } from "hyper-utils";
 import { useMutation } from "@tanstack/react-query";
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
 import { ApiService } from "@/services/ApiService";
+import OrderStepWrapper from "./OrderStepWrapper";
 
 export default function SelectVariant() {
-  const { product, setStep, setOrder, order, step } = useOrderStore();
+  const { product, setStep, setOrder, order, step, hasVariants } = useOrderStore();
   const [selectedVariant, setSelectedVariant] = useState(order?.info?.variant || null);
 
   const actionUpdateVariant = useMutation({
@@ -46,12 +46,23 @@ export default function SelectVariant() {
 
   const variants = Object.entries(product.variants || {});
 
+  const handleBack = () => setStep(step - 1);
+  const handleContinue = () => {
+    if (selectedVariant) {
+      handleVariantSelect(selectedVariant);
+    }
+  };
+  const canContinue = selectedVariant && !actionUpdateVariant.isPending;
+
   return (
-    <Box maxWidth={400} mx="auto" mt={2}>
-      <Typography variant="h6" mb={2} fontWeight={600} textAlign="center">
-        Choose Size
-      </Typography>
-      
+    <OrderStepWrapper
+      title="Choose Size"
+      onBack={handleBack}
+      onContinue={handleContinue}
+      continueDisabled={!canContinue}
+      continueLoading={actionUpdateVariant.isPending}
+      continueText="Continue"
+    >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {variants.map(([key, variant]) => {
           const isSelected = selectedVariant === key;
@@ -106,22 +117,6 @@ export default function SelectVariant() {
       </Box>
 
       <LoadingErrorRQ q={actionUpdateVariant} />
-      
-      <Box mt={3}>
-        <Button
-          variant="outlined"
-          fullWidth
-          onClick={() => setStep(step - 1)}
-          disabled={actionUpdateVariant.isPending}
-          sx={{
-            py: 1.5,
-            borderRadius: "100px",
-            fontWeight: 600,
-          }}
-        >
-          Back
-        </Button>
-      </Box>
-    </Box>
+    </OrderStepWrapper>
   );
 }
