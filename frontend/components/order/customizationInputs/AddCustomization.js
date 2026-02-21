@@ -21,7 +21,7 @@ export default function AddCustomization() {
         values
       );
       setOrder(response);
-      setStep(hasVariants ? 3 : 2);
+      setStep(hasVariants ? 4 : 3);
       return response;
     },
   });
@@ -31,7 +31,7 @@ export default function AddCustomization() {
     let validator = c.fieldType === "image" ? Yup.mixed() : Yup.string();
     let minlength = c.info?.minLength;
     let maxlength = c.info?.maxLength;
-    if (order?.info?.variant && c.fieldType === "text") {
+    if (order?.info?.variant && (c.fieldType === "text" || c.fieldType === "text_alphabet")) {
       const objVariant = product.variants?.[order.info.variant];
       if (objVariant?.maxLength) {
         maxlength = objVariant.maxLength;
@@ -80,7 +80,7 @@ export default function AddCustomization() {
           <Form>
             {customizations.map((c) => {
               // console.log(values, errors, "form");
-              if (c.fieldType === "text")
+              if (c.fieldType === "text" || c.fieldType === "text_alphabet")
                 return (
                   <TextCustomizationField
                     key={c.field}
@@ -88,6 +88,7 @@ export default function AddCustomization() {
                     label={c.label}
                     required={c.required}
                     info={c.info}
+                    alphabetOnly={c.fieldType === "text_alphabet"}
                   />
                 );
               if (c.fieldType === "color")
@@ -119,14 +120,31 @@ export default function AddCustomization() {
                 variant="outlined"
                 onClick={() => setStep(step - 1)}
                 disabled={isSubmitting || (!hasVariants && step <= 1)}
+                sx={{
+                  py: 1.5,
+                  borderRadius: "100px",
+                  fontWeight: 600,
+                }}
               >
                 Back
               </Button>
               <Button
                 type="submit"
                 variant="contained"
-                color="primary"
                 disabled={isSubmitting || !isValid}
+                sx={{
+                  py: 1.5,
+                  borderRadius: "100px",
+                  fontWeight: 700,
+                  bgcolor: "#FFD814",
+                  color: "#0F1111",
+                  border: "1px solid #FCD200",
+                  boxShadow: "0 2px 5px 0 rgba(213,217,217,.5)",
+                  "&:hover": {
+                    bgcolor: "#F7CA00",
+                    borderColor: "#F2C200",
+                  },
+                }}
               >
                 Next
               </Button>

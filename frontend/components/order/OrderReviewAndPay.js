@@ -186,7 +186,7 @@ export default function OrderReviewAndPay() {
               </React.Fragment>
             );
           }
-          if (c.fieldType === "text" && val) {
+          if ((c.fieldType === "text" || c.fieldType === "text_alphabet") && val) {
             return (
               <Box key={c.field} mb={1}>
                 <Typography variant="body2" fontWeight={500}>
@@ -220,17 +220,21 @@ export default function OrderReviewAndPay() {
         <Typography variant="body2">{address.country || "India"}</Typography>
       </Box>
 
-      <Typography variant="body2" textAlign="center" mt={2} mb={2}>
-        Pay now to confirm your order. You will receive an Whatsapp message with
-        order details once payment is successful.
-        <br />
-        In case of any issues, please contact us on{" "}
-        <a
-          href={`https://wa.me/${CONTACT_PHONE?.replace(/\s/g, "")?.replace(/\+/g, "")}`}
-        >
-          {CONTACT_PHONE}
-        </a>
-      </Typography>
+      <Box variant="body2" textAlign="center" mt={2} mb={2} sx={{ textAlign: "center", mt: 2, mb: 2 }}>
+        <Typography variant="body2">
+          Pay now to confirm your order. You will receive an Whatsapp message with
+          order details once payment is successful.
+        </Typography>
+        <Typography variant="body2">
+          In case of any issues, please contact us on{" "}
+          <a
+            href={`https://wa.me/${CONTACT_PHONE?.replace(/\s/g, "")?.replace(/\+/g, "")}`}
+            style={{ color: "inherit", textDecoration: "underline" }}
+          >
+            {CONTACT_PHONE}
+          </a>
+        </Typography>
+      </Box>
 
       {/* Sticky Bottom Button Container */}
       <Box sx={{ height: 100 }} /> {/* Spacer to prevent content overlap */}
@@ -265,20 +269,26 @@ export default function OrderReviewAndPay() {
           </Button>
           <Button
             variant="contained"
-            color="primary"
             size="large"
             fullWidth
             disabled={paying || actionVerifyCashfreeOrder.isPending}
             onClick={handlePay}
             sx={{
               py: 1.5,
-              borderRadius: 2,
-              fontWeight: 600,
+              borderRadius: "100px",
+              fontWeight: 700,
               fontSize: "1rem",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              bgcolor: "#FFD814",
+              color: "#0F1111",
+              border: "1px solid #FCD200",
+              boxShadow: "0 2px 5px 0 rgba(213,217,217,.5)",
+              "&:hover": {
+                bgcolor: "#F7CA00",
+                borderColor: "#F2C200",
+              },
             }}
           >
-            {paying ? "Processing..." : "Complete The order"}
+            {paying ? "Processing..." : "Pay Now"}
           </Button>
           {payError && (
             <Typography color="error" mt={1} variant="caption" display="block" textAlign="center">

@@ -210,7 +210,7 @@ export default function OrderDetailPage({ orderId }) {
                 }
 
                 // Handle text customization
-                if (def.fieldType === "text" && value) {
+                if ((def.fieldType === "text" || def.fieldType === "text_alphabet") && value) {
                   return (
                     <Box key={field} mb={1}>
                       <Typography variant="body2" fontWeight={500}>

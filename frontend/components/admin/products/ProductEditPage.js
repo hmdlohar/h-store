@@ -625,6 +625,7 @@ export default function ProductEditPage() {
                               }
                             >
                               <MenuItem value="text">Text</MenuItem>
+                              <MenuItem value="text_alphabet">Text (Alphabet Only)</MenuItem>
                               <MenuItem value="color">Color</MenuItem>
                               <MenuItem value="image">Image</MenuItem>
                             </Select>

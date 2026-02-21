@@ -6,6 +6,7 @@ export default function TextCustomizationField({
   label,
   required,
   info,
+  alphabetOnly,
 }) {
   const [formikField, meta] = useField(field);
   const currentLength = formikField.value?.length || 0;
@@ -36,9 +37,14 @@ export default function TextCustomizationField({
     <TextField
       {...formikField}
       onChange={(e) => {
+        let value = e.target.value;
         if (info?.uppercase) {
-          e.target.value = e.target.value.toUpperCase();
+          value = value.toUpperCase();
         }
+        if (alphabetOnly) {
+          value = value.replace(/[^a-zA-Z]/g, "");
+        }
+        e.target.value = value;
         formikField.onChange(e);
       }}
       label={label}

@@ -65,13 +65,13 @@ export default function OrderPage() {
 
   const getStepLabel = (stepNumber) => {
     if (hasVariants) {
-      if (stepNumber === 1) return "Select Variant";
-      if (stepNumber === 2) return "Customize";
-      if (stepNumber === 3) return "Delivery Address";
+      if (stepNumber === 1) return "Delivery Address";
+      if (stepNumber === 2) return "Select Variant";
+      if (stepNumber === 3) return "Customize";
       if (stepNumber === 4) return "Review & Pay";
     } else {
-      if (stepNumber === 1) return "Customize";
-      if (stepNumber === 2) return "Delivery Address";
+      if (stepNumber === 1) return "Delivery Address";
+      if (stepNumber === 2) return "Customize";
       if (stepNumber === 3) return "Review & Pay";
     }
     return "";
@@ -170,11 +170,11 @@ export default function OrderPage() {
               if (hasVariants) {
                 switch (step) {
                   case 1:
-                    return <SelectVariant />;
-                  case 2:
-                    return <AddCustomization />;
-                  case 3:
                     return <GetAddress />;
+                  case 2:
+                    return <SelectVariant />;
+                  case 3:
+                    return <AddCustomization />;
                   case 4:
                     return <OrderReviewAndPay />;
                   default:
@@ -183,9 +183,9 @@ export default function OrderPage() {
               } else {
                 switch (step) {
                   case 1:
-                    return <AddCustomization />;
-                  case 2:
                     return <GetAddress />;
+                  case 2:
+                    return <AddCustomization />;
                   case 3:
                     return <OrderReviewAndPay />;
                   default:

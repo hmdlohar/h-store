@@ -1,15 +1,9 @@
 import React, { useState } from "react";
 import { useOrderStore } from "@/store/orderStore";
-import { useRouter } from "next/router";
 import {
   Typography,
   Button,
   Box,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  ListItemIcon,
   Chip,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -20,8 +14,7 @@ import { ApiService } from "@/services/ApiService";
 
 export default function SelectVariant() {
   const { product, setStep, setOrder, order, step } = useOrderStore();
-  const router = useRouter();
-  const [variant, setVariant] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(order?.info?.variant || null);
 
   const actionUpdateVariant = useMutation({
     mutationFn: async (variantKey) => {
@@ -33,88 +26,100 @@ export default function SelectVariant() {
     },
     onSuccess: (response) => {
       setOrder(response);
-      setStep(2);
+      setStep(3);
     },
   });
 
+  const handleVariantSelect = (key) => {
+    setSelectedVariant(key);
+    setOrder({
+      ...order,
+      info: { ...order.info, variant: key },
+      items: order.items.map(item => ({
+        ...item,
+        price: product.variants[key].price,
+        amount: product.variants[key].price
+      }))
+    });
+    actionUpdateVariant.mutate(key);
+  };
+
+  const variants = Object.entries(product.variants || {});
+
   return (
-    <Box p={0}>
-      <Typography variant="h6" mb={1}>
-        Select Variant
+    <Box maxWidth={400} mx="auto" mt={2}>
+      <Typography variant="h6" mb={2} fontWeight={600} textAlign="center">
+        Choose Size
       </Typography>
-      <List dense>
-        {Object.keys(product.variants || {}).map((key) => (
-          <ListItem key={key} disablePadding>
-            <ListItemButton
-              selected={variant === key}
-              onClick={() => {
-                setVariant(key);
-                // Update order immediately to reflect price change in parent
-                setOrder({
-                  ...order,
-                  info: { ...order.info, variant: key },
-                  items: order.items.map(item => ({
-                    ...item,
-                    price: product.variants[key].price,
-                    amount: product.variants[key].price
-                  }))
-                });
-                // Call API to save variant and advance to next step
-                actionUpdateVariant.mutate(key);
-              }}
-              disabled={actionUpdateVariant.isPending}
+      
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {variants.map(([key, variant]) => {
+          const isSelected = selectedVariant === key;
+          return (
+            <Box
+              key={key}
+              onClick={() => !actionUpdateVariant.isPending && handleVariantSelect(key)}
               sx={{
-                borderRadius: 1,
-                mb: 0.5,
-                py: 0.5,
-                bgcolor: variant === key ? "primary.50" : "background.paper",
-                border: variant === key ? "2px solid" : "1px solid",
-                borderColor: variant === key ? "primary.main" : "grey.300",
+                py: 1.5,
+                px: 2,
+                borderRadius: 2,
+                border: isSelected ? '2px solid #1976d2' : '1px solid #e0e0e0',
+                bgcolor: isSelected ? '#e3f2fd' : '#fff',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                cursor: actionUpdateVariant.isPending ? 'not-allowed' : 'pointer',
+                opacity: actionUpdateVariant.isPending ? 0.6 : 1,
+                transition: 'all 0.2s ease',
               }}
             >
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={variant === key ? 600 : 400}
-                  >
+              <Box display="flex" alignItems="center" gap={1}>
+                {isSelected ? (
+                  <CheckCircleIcon sx={{ color: '#1976d2', fontSize: 22 }} />
+                ) : (
+                  <Box
+                    sx={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: '50%',
+                      border: '2px solid #bdbdbd',
+                    }}
+                  />
+                )}
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={600}>
                     {key}
                   </Typography>
-                }
-                secondary={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      {prettyPrice(product.variants[key].price)}
+                  {variant.maxLength && (
+                    <Typography variant="caption" color="text.secondary">
+                      Up to {variant.maxLength} chars
                     </Typography>
-                    {product.variants[key].maxLength && (
-                      <Chip 
-                        size="small" 
-                        label={`Max ${product.variants[key].maxLength} chars`}
-                        color={variant === key ? "primary" : "default"}
-                        variant="outlined"
-                        sx={{ fontSize: '0.75rem' }}
-                      />
-                    )}
-                  </Box>
-                }
-              />
-              {variant === key && (
-                <ListItemIcon>
-                  <CheckCircleIcon color="primary" />
-                </ListItemIcon>
-              )}
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+                  )}
+                </Box>
+              </Box>
+              <Typography variant="subtitle1" fontWeight={700} color="primary.main">
+                {prettyPrice(variant.price)}
+              </Typography>
+            </Box>
+          );
+        })}
+      </Box>
+
       <LoadingErrorRQ q={actionUpdateVariant} />
-      <Box mt={2} display="flex" justifyContent="space-between">
+      
+      <Box mt={3}>
         <Button
           variant="outlined"
-          onClick={() => router.back()}
+          fullWidth
+          onClick={() => setStep(step - 1)}
           disabled={actionUpdateVariant.isPending}
+          sx={{
+            py: 1.5,
+            borderRadius: "100px",
+            fontWeight: 600,
+          }}
         >
-          Cancel
+          Back
         </Button>
       </Box>
     </Box>
