@@ -23,7 +23,7 @@ async function createCashfreeOrder(order) {
           customer_phone: order.deliveryAddress?.mobile,
         },
         order_meta: {
-          // return_url: `${process.env.APP_ROOT_URL}/order/payment-callback?order_id={order._id}`,
+          return_url: `${process.env.FRONTEND_URL}/payment-return?order_id=${order._id}`,
           order_id: order._id,
         },
       },

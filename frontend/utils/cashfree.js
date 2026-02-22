@@ -20,7 +20,7 @@ export async function launchCashfreePayment(sessionId) {
 
     let checkoutOptions = {
       paymentSessionId: sessionId,
-      redirectTarget: "_modal",
+      redirectTarget: "_self",
     };
     cashfree.checkout(checkoutOptions).then((result) => {
       if (result.error) {
