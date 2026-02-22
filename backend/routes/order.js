@@ -134,6 +134,23 @@ router.post("/upload-image", upload.single("file"), async (req, res) => {
   }
 });
 
+// Finalize order - called when user reaches payment step
+router.post("/finalize-order", async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) throw new Error("orderId is required");
+    const order = await OrderModel.findById(orderId);
+    if (!order) throw new Error("Order not found");
+    
+    order.set("status", enums.ORDER_STATUS.FINALIZED);
+    await order.save();
+    
+    res.sendSuccess(order, "Order finalized");
+  } catch (ex) {
+    res.sendError(ex, parseErrorString(ex));
+  }
+});
+
 // Create Cashfree order for payment
 router.post("/create-cashfree-order", async (req, res) => {
   try {

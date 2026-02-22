@@ -1,6 +1,7 @@
 module.exports = {
   ORDER_STATUS: {
     PENDING: "pending",
+    FINALIZED: "finalized",
     PAID: "paid",
     PROCESSING: "processing",
     SHIPPED: "shipped",

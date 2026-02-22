@@ -11,13 +11,30 @@ import { CONTACT_PHONE } from "@/constants";
 import { insightService } from "@/services/InsightService";
 import { fbPixel } from "@/services/FacebookPixelService";
 import OrderStepWrapper from "./OrderStepWrapper";
+import { useEffect } from "react";
 
 function prettyPrice(amount) {
   return `₹${Number(amount).toLocaleString("en-IN")}`;
 }
 
 export default function OrderReviewAndPay() {
-  const { order, product, resetOrder, setStep, step, hasVariants } = useOrderStore();
+  const { order, product, resetOrder, setStep, step, hasVariants, setOrder } = useOrderStore();
+
+  const actionFinalizeOrder = useMutation({
+    mutationFn: async () => {
+      const res = await ApiService.call("/api/order/finalize-order", "post", {
+        orderId: order._id,
+      });
+      setOrder(res);
+      return res;
+    },
+  });
+
+  useEffect(() => {
+    if (order && order.status !== "finalized") {
+      actionFinalizeOrder.mutate();
+    }
+  }, []);
 
   const actionVerifyCashfreeOrder = useMutation({
     mutationFn: async () => {

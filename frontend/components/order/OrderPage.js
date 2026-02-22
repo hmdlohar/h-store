@@ -59,6 +59,14 @@ export default function OrderPage() {
     } 
   }, []);
 
+  // If order is finalized, go to final step
+  useEffect(() => {
+    if (order?.status === "finalized") {
+      const finalStep = hasVariants ? 4 : 3;
+      setStep(finalStep);
+    }
+  }, [order?.status, hasVariants, setStep]);
+
   // Show loading or redirect if no product
   if (!product) {
     return (
