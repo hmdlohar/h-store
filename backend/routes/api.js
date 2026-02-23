@@ -30,6 +30,9 @@ router.use("/admin/products", require("./admin/products"));
 router.use("/admin/upload", require("./admin/upload"));
 router.use("/admin/reviews", require("./admin/reviews"));
 router.use("/admin/insights", require("./admin/insights"));
+router.use("/admin/jobs", require("./admin/jobs"));
+router.use("/admin/message-logs", require("./admin/message-logs"));
+router.use("/admin/message-templates", require("./admin/message-templates"));
 
 router.get("/", (req, res) => {
   return res.send("Router is working.");

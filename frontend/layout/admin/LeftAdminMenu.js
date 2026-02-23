@@ -33,6 +33,18 @@ export default function LeftAdminMenu() {
       label: "User Insights",
       href: "/admin/insights",
     },
+    {
+      label: "Job Queue",
+      href: "/admin/jobs",
+    },
+    {
+      label: "Message Logs",
+      href: "/admin/message-logs",
+    },
+    {
+      label: "Message Templates",
+      href: "/admin/message-templates",
+    },
   ];
 
   return (
