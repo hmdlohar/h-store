@@ -1,0 +1,11 @@
+Hello! 😊
+
+Your Order #${orderID} has been placed successfully.
+We have received ${amount} for your order.
+
+We may call you shortly to confirm your order. Once confirmed, we will proceed with shipping.
+
+Thank you for ordering with Giftsh.in! 🙏
+
+Best regards,
+Hamid Lohar

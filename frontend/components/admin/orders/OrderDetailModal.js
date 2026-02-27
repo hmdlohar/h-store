@@ -19,6 +19,8 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { format } from "date-fns";
+import { useMutation } from "@tanstack/react-query";
+import { ApiService } from "@/services/ApiService";
 
 const statusColors = {
   paid: "success",
@@ -34,6 +36,24 @@ export default function OrderDetailModal({ open, onClose, order }) {
   const formattedDate = order.createdAt
     ? format(new Date(order.createdAt), "MMM dd, yyyy • h:mm a")
     : "N/A";
+
+  const sendMessageMutation = useMutation({
+    mutationFn: async (channel) => {
+      return await ApiService.call(`/api/admin/orders/${order._id}/send-order-placed`, "post", {
+        channel,
+      });
+    },
+    onSuccess: (_, channel) => {
+      alert(
+        channel === "email"
+          ? "Order placed email sent successfully."
+          : "Order placed WhatsApp sent successfully.",
+      );
+    },
+    onError: (error) => {
+      alert(error?.response?.data?.msg || error?.message || "Failed to send message");
+    },
+  });
 
   return (
     <Dialog
@@ -181,6 +201,20 @@ export default function OrderDetailModal({ open, onClose, order }) {
       </DialogContent>
 
       <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+        <Button
+          variant="outlined"
+          onClick={() => sendMessageMutation.mutate("whatsapp")}
+          disabled={sendMessageMutation.isPending}
+        >
+          Send Order Placed WhatsApp
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() => sendMessageMutation.mutate("email")}
+          disabled={sendMessageMutation.isPending}
+        >
+          Send Order Placed Email
+        </Button>
         <Button variant="outlined" color="primary">
           Update Status
         </Button>

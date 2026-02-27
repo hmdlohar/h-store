@@ -18,6 +18,10 @@ const MessageLogSchema = new mongoose.Schema({
   content: {
     type: String,
   },
+  subject: {
+    type: String,
+    default: "",
+  },
   info: {
     type: Object,
     default: {},

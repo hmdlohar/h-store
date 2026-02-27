@@ -4,13 +4,11 @@ const MessageTemplateService = require("./MessageTemplateService");
 class MessageService {
   static async sendSMS({ to, message, templateName, variables }) {
     let content = message;
-    let templateId = null;
     let templateUsed = null;
 
     if (templateName) {
-      const rendered = await MessageTemplateService.renderTemplate(templateName, variables, "sms");
+      const rendered = await MessageTemplateService.renderTemplate(templateName, variables);
       content = rendered.content;
-      templateId = rendered.templateId;
       templateUsed = rendered.templateName;
     }
 
@@ -18,7 +16,7 @@ class MessageService {
       type: "sms",
       content,
       to,
-      info: { templateId, templateUsed },
+      info: { templateUsed },
     });
     await messageLog.save();
     return messageLog;
@@ -27,14 +25,15 @@ class MessageService {
   static async sendEmail({ to, subject, message, templateName, variables }) {
     let emailSubject = subject;
     let content = message;
-    let templateId = null;
     let templateUsed = null;
 
+    if (!emailSubject) {
+      throw new Error("Email subject is required");
+    }
+
     if (templateName) {
-      const rendered = await MessageTemplateService.renderTemplate(templateName, variables, "email");
-      emailSubject = rendered.subject || subject;
+      const rendered = await MessageTemplateService.renderTemplate(templateName, variables);
       content = rendered.content;
-      templateId = rendered.templateId;
       templateUsed = rendered.templateName;
     }
 
@@ -43,7 +42,7 @@ class MessageService {
       content,
       to,
       subject: emailSubject,
-      info: { templateId, templateUsed },
+      info: { templateUsed },
     });
     await emailLog.save();
     return emailLog;
@@ -51,13 +50,11 @@ class MessageService {
 
   static async sendWhatsApp({ to, message, templateName, variables }) {
     let content = message;
-    let templateId = null;
     let templateUsed = null;
 
     if (templateName) {
-      const rendered = await MessageTemplateService.renderTemplate(templateName, variables, "whatsapp");
+      const rendered = await MessageTemplateService.renderTemplate(templateName, variables);
       content = rendered.content;
-      templateId = rendered.templateId;
       templateUsed = rendered.templateName;
     }
 
@@ -65,21 +62,27 @@ class MessageService {
       type: "whatsapp",
       content,
       to,
-      info: { templateId, templateUsed },
+      info: { templateUsed },
     });
     await messageLog.save();
     return messageLog;
   }
 
-  static async sendByTemplate({ to, templateName, variables }) {
+  static async sendByTemplate({ to, type, subject, templateName, variables }) {
+    if (!type) {
+      throw new Error("Message type is required");
+    }
     const rendered = await MessageTemplateService.renderTemplate(templateName, variables);
+    if (type === "email" && !subject) {
+      throw new Error("Email subject is required");
+    }
 
     const messageLog = new MessageLogModel({
-      type: rendered.type,
+      type,
       content: rendered.content,
       to,
-      subject: rendered.subject,
-      info: { templateId: rendered.templateId, templateUsed: rendered.templateName },
+      subject: type === "email" ? subject : undefined,
+      info: { templateUsed: rendered.templateName },
     });
     await messageLog.save();
     return messageLog;

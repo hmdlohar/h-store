@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/hmdlohar/accountspp-node#readme",
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.999.0",
     "@sentry/node": "^9.15.0",
     "axios": "^1.8.4",
     "cookie-parser": "^1.4.7",

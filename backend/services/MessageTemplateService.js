@@ -1,4 +1,6 @@
-const MessageTemplate = require("../models/MessageTemplate");
+const fs = require("fs");
+const path = require("path");
+const templateRegistry = require("../templates/templateRegistry");
 
 class MessageTemplateService {
   static extractVariables(text) {
@@ -19,64 +21,34 @@ class MessageTemplateService {
     });
   }
 
-  static async getTemplate(name, type = null) {
-    const query = { name, isActive: true };
-    if (type) {
-      query.type = type;
-    }
-    return await MessageTemplate.findOne(query);
+  static getTemplate(templateName) {
+    return templateRegistry[templateName] || null;
   }
 
-  static async renderTemplate(templateName, variables, type = null) {
-    const template = await this.getTemplate(templateName, type);
-    
+  static async renderTemplate(templateName, variables = {}) {
+    const template = this.getTemplate(templateName);
     if (!template) {
-      throw new Error(`Template "${templateName}" not found or inactive`);
+      throw new Error(`Template "${templateName}" is not configured in templateRegistry.js`);
     }
 
-    const missingVars = template.variables?.filter(v => variables[v] === undefined) || [];
+    const templatePath = path.join(__dirname, "..", "templates", template.file);
+    const content = await fs.promises.readFile(templatePath, "utf8");
+    const requiredVariables = template.variables || [];
+    const missingVars = requiredVariables.filter((v) => variables[v] === undefined);
     if (missingVars.length > 0) {
       throw new Error(`Missing required variables: ${missingVars.join(", ")}`);
     }
 
-    const subject = template.subject ? this.replaceVariables(template.subject, variables) : "";
-    const content = this.replaceVariables(template.content, variables);
-
     return {
-      subject,
-      content,
-      type: template.type,
-      templateId: template._id,
-      templateName: template.name,
+      content: this.replaceVariables(content, variables),
+      templateName,
+      templateFile: template.file,
+      requiredVariables,
     };
   }
 
-  static async renderTemplateById(templateId, variables) {
-    const template = await MessageTemplate.findById(templateId);
-    
-    if (!template) {
-      throw new Error(`Template not found`);
-    }
-
-    if (!template.isActive) {
-      throw new Error(`Template is inactive`);
-    }
-
-    const missingVars = template.variables?.filter(v => variables[v] === undefined) || [];
-    if (missingVars.length > 0) {
-      throw new Error(`Missing required variables: ${missingVars.join(", ")}`);
-    }
-
-    const subject = template.subject ? this.replaceVariables(template.subject, variables) : "";
-    const content = this.replaceVariables(template.content, variables);
-
-    return {
-      subject,
-      content,
-      type: template.type,
-      templateId: template._id,
-      templateName: template.name,
-    };
+  static async renderTemplateById() {
+    throw new Error("renderTemplateById is not supported with file-based templates");
   }
 }
 

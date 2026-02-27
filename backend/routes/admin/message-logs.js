@@ -97,6 +97,12 @@ router.post("/bulk-action", async (req, res) => {
         await MessageLog.deleteMany({ _id: { $in: logIds } });
         res.sendSuccess(null, `${logIds.length} logs deleted`);
         return;
+      case "retry":
+        await MessageLog.updateMany(
+          { _id: { $in: logIds } },
+          { $set: { status: "pending", error: "" } }
+        );
+        break;
       case "mark_sent":
         await MessageLog.updateMany({ _id: { $in: logIds } }, { $set: { status: "sent" } });
         break;

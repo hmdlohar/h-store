@@ -31,6 +31,8 @@ import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   Search as SearchIcon,
+  Replay as ReplayIcon,
+  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import { useState } from "react";
 
@@ -99,6 +101,19 @@ export default function MessageLogsPage() {
     },
   });
 
+  const retryMutation = useMutation({
+    mutationFn: async (id) => {
+      return await ApiService.call(`/api/admin/message-logs/${id}`, "put", {
+        status: "pending",
+        error: "",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["admin-message-logs"]);
+      queryClient.invalidateQueries(["admin-message-logs-stats"]);
+    },
+  });
+
   const bulkActionMutation = useMutation({
     mutationFn: async ({ action, logIds }) => {
       return await ApiService.call("/api/admin/message-logs/bulk-action", "post", {
@@ -128,6 +143,10 @@ export default function MessageLogsPage() {
     }
   };
 
+  const handleRetry = (id) => {
+    retryMutation.mutate(id);
+  };
+
   const handleBulkAction = (action) => {
     if (selectedLogs.length === 0) return;
     if (window.confirm(`Are you sure you want to ${action} ${selectedLogs.length} logs?`)) {
@@ -154,6 +173,23 @@ export default function MessageLogsPage() {
     return new Date(date).toLocaleString();
   };
 
+  const sanitizeContent = (content = "") => {
+    if (!content) return "";
+    return content
+      .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, " ")
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const getTrimmedContent = (content, limit = 90) => {
+    const plain = sanitizeContent(content);
+    if (!plain) return "-";
+    return plain.length > limit ? `${plain.slice(0, limit)}...` : plain;
+  };
+
   const openDetailDialog = (log) => {
     setSelectedLog(log);
     setDetailDialogOpen(true);
@@ -164,7 +200,11 @@ export default function MessageLogsPage() {
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
           <Typography variant="h5">Message Logs</Typography>
-          <IconButton size="small" onClick={() => queryClient.invalidateQueries(["admin-message-logs"])} title="Reload">
+          <IconButton
+            size="small"
+            onClick={() => queryClient.invalidateQueries(["admin-message-logs"])}
+            title="Reload"
+          >
             <RefreshIcon />
           </IconButton>
         </Stack>
@@ -226,8 +266,17 @@ export default function MessageLogsPage() {
               ))}
             </Select>
           </FormControl>
+
           {selectedLogs.length > 0 && (
             <Stack direction="row" spacing={1}>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<ReplayIcon />}
+                onClick={() => handleBulkAction("retry")}
+              >
+                Retry ({selectedLogs.length})
+              </Button>
               <Button
                 size="small"
                 variant="outlined"
@@ -270,11 +319,7 @@ export default function MessageLogsPage() {
               </TableHead>
               <TableBody>
                 {q.data.logs?.map((log) => (
-                  <TableRow
-                    key={log._id}
-                    hover
-                    selected={selectedLogs.includes(log._id)}
-                  >
+                  <TableRow key={log._id} hover selected={selectedLogs.includes(log._id)}>
                     <TableCell padding="checkbox">
                       <input
                         type="checkbox"
@@ -283,11 +328,7 @@ export default function MessageLogsPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={log.type}
-                        size="small"
-                        variant="outlined"
-                      />
+                      <Chip label={log.type} size="small" variant="outlined" />
                     </TableCell>
                     <TableCell>
                       {log.info?.templateUsed ? (
@@ -296,31 +337,41 @@ export default function MessageLogsPage() {
                         "-"
                       )}
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <TableCell sx={{ maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {log.to}
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <TableCell sx={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>
                       {log.subject || "-"}
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {log.content || "-"}
+                    <TableCell sx={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {getTrimmedContent(log.content)}
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={log.status}
-                        color={STATUS_COLORS[log.status] || "default"}
-                        size="small"
-                      />
+                      <Chip label={log.status} color={STATUS_COLORS[log.status] || "default"} size="small" />
                     </TableCell>
-                    <TableCell sx={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <TableCell sx={{ maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis" }}>
                       <Typography variant="caption" color="error">
                         {log.error || "-"}
                       </Typography>
                     </TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                      {formatDate(log.createdAt)}
-                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{formatDate(log.createdAt)}</TableCell>
                     <TableCell align="right">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => openDetailDialog(log)}
+                        title="Preview"
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="warning"
+                        onClick={() => handleRetry(log._id)}
+                        title="Retry"
+                      >
+                        <ReplayIcon />
+                      </IconButton>
                       <IconButton
                         size="small"
                         color="error"
@@ -334,7 +385,7 @@ export default function MessageLogsPage() {
                 ))}
                 {q.data.logs?.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} align="center">
+                    <TableCell colSpan={10} align="center">
                       <Typography variant="body2" color="text.secondary">
                         No message logs found
                       </Typography>
@@ -345,7 +396,7 @@ export default function MessageLogsPage() {
             </Table>
           </TableContainer>
 
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
             <Pagination
               count={q.data.pagination?.totalPages || 1}
               page={page}
@@ -377,7 +428,15 @@ export default function MessageLogsPage() {
               )}
               <Box>
                 <Typography variant="caption" color="text.secondary">Content</Typography>
-                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{selectedLog.content}</Typography>
+                {selectedLog.type === "email" ? (
+                  <Paper variant="outlined" sx={{ p: 2, mt: 0.5, overflowX: "auto" }}>
+                    <Box dangerouslySetInnerHTML={{ __html: selectedLog.content || "" }} />
+                  </Paper>
+                ) : (
+                  <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+                    {sanitizeContent(selectedLog.content) || "-"}
+                  </Typography>
+                )}
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">Status</Typography>
@@ -400,7 +459,7 @@ export default function MessageLogsPage() {
               {selectedLog.info && Object.keys(selectedLog.info).length > 0 && (
                 <Box>
                   <Typography variant="caption" color="text.secondary">Additional Info</Typography>
-                  <Typography variant="body2" component="pre" sx={{ fontFamily: 'monospace', fontSize: 12 }}>
+                  <Typography variant="body2" component="pre" sx={{ fontFamily: "monospace", fontSize: 12 }}>
                     {JSON.stringify(selectedLog.info, null, 2)}
                   </Typography>
                 </Box>
