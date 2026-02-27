@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import { 
   Edit as EditIcon, 
   Delete as DeleteIcon,
-  RateReview as RateReviewIcon 
+  RateReview as RateReviewIcon
 } from "@mui/icons-material";
 
 const getImageUrl = (path) => {
@@ -32,6 +32,7 @@ const getImageUrl = (path) => {
 
 export default function ProductsPage() {
   const router = useRouter();
+
   const q = useQuery({
     queryKey: ["admin-products"],
     queryFn: async () => {

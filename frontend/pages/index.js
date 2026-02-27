@@ -7,6 +7,7 @@ export async function getStaticProps() {
   const res = await ApiService.call("/api/public/home-page-config", "get");
   return {
     props: { homePageConfig: res },
+    revalidate: 3600,
   };
 }
 

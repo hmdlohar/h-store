@@ -31,7 +31,7 @@ export async function getStaticProps({ params }) {
       props: {
         product,
       },
-      // revalidate: 60, // Regenerate page after 60 seconds if requested
+      revalidate: 3600, // Regenerate page after 1 hour if requested
     };
   } catch (error) {
     return {
