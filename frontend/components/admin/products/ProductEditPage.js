@@ -3,7 +3,7 @@ import { ApiService } from "@/services/ApiService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import ImageUpload from "@/components/common/ImageUpload";
+import ImageUpload from "@/common/ImageUpload";
 import {
   Box,
   TextField,

@@ -31,7 +31,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
 
 import LoadingErrorRQ from "@/common/LoadingErrorRQ";
-import DateDisplay from "@/components/common/DateDisplay";
+import DateDisplay from "@/common/DateDisplay";
 import { useInsightsFilterStore } from "@/store/insightsFilterStore";
 
 export default function AdminInsightsIndex() {

@@ -16,6 +16,7 @@
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "@tanstack/react-query": "^5.74.4",
+    "@tanstack/react-table": "^8.21.3",
     "dotenv": "^16.5.0",
     "formik": "^2.4.6",
     "hyper-utils": "^1.1.11",
