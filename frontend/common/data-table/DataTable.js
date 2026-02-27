@@ -19,8 +19,11 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
+  IconButton,
+  Stack,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 export default function DataTable({
   columns,
@@ -34,6 +37,7 @@ export default function DataTable({
   onPageSizeChange,
   onSortingChange,
   onGlobalFilterChange,
+  onReload,
   loading = false,
   checkboxSelection = false,
   onRowClick,
@@ -105,22 +109,31 @@ export default function DataTable({
 
   return (
     <Paper elevation={1} sx={{ width: "100%", overflow: "hidden" }}>
-      {onGlobalFilterChange && (
+      {(onGlobalFilterChange || onReload) && (
         <Box sx={{ p: 2, pb: 0 }}>
-          <TextField
-            size="small"
-            placeholder="Search..."
-            value={localGlobalFilter}
-            onChange={(e) => handleSearch(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ minWidth: 250 }}
-          />
+          <Stack direction="row" spacing={2} alignItems="center">
+            {onGlobalFilterChange && (
+              <TextField
+                size="small"
+                placeholder="Search..."
+                value={localGlobalFilter}
+                onChange={(e) => handleSearch(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ minWidth: 250 }}
+              />
+            )}
+            {onReload && (
+              <IconButton onClick={onReload} size="small" disabled={loading}>
+                <RefreshIcon />
+              </IconButton>
+            )}
+          </Stack>
         </Box>
       )}
 

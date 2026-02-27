@@ -182,6 +182,7 @@ export default function OrdersPage() {
         }
         onSortingChange={setSorting}
         onGlobalFilterChange={setGlobalFilter}
+        onReload={() => q.refetch()}
         onRowClick={(row) => setSelectedOrder(row)}
       />
 
