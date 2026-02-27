@@ -1,7 +1,7 @@
 const { parseErrorString } = require("hyper-utils");
 const enums = require("../enums");
 const JobQueue = require("../models/JobQueue");
-const { processOrderNotification } = require("../util/orderUtils");
+const { processOrderNotification, processOrderPaid } = require("../util/orderUtils");
 class JobQueueService {
   static async createJob({ type, context }) {
     const job = new JobQueue({ type, context });
@@ -32,6 +32,9 @@ class JobQueueService {
       switch (type) {
         case enums.JOB_TYPE.ORDER_NOTIFICATION:
           await processOrderNotification(context.orderId);
+          break;
+        case enums.JOB_TYPE.ORDER_PAID:
+          await processOrderPaid(context.orderId);
           break;
         default:
           throw new Error(`Unknown job type: ${type}`);

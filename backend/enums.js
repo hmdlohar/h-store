@@ -10,5 +10,6 @@ module.exports = {
   },
   JOB_TYPE: {
     ORDER_NOTIFICATION: "order-notification",
+    ORDER_PAID: "order-paid",
   },
 };

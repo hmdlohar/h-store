@@ -31,15 +31,14 @@ const statusColors = {
 };
 
 export default function OrderDetailModal({ open, onClose, order }) {
-  if (!order) return null;
-
-  const formattedDate = order.createdAt
-    ? format(new Date(order.createdAt), "MMM dd, yyyy • h:mm a")
-    : "N/A";
+  const orderId = order?._id;
 
   const sendMessageMutation = useMutation({
     mutationFn: async (channel) => {
-      return await ApiService.call(`/api/admin/orders/${order._id}/send-order-placed`, "post", {
+      if (!orderId) {
+        throw new Error("Order not found");
+      }
+      return await ApiService.call(`/api/admin/orders/${orderId}/send-order-placed`, "post", {
         channel,
       });
     },
@@ -54,6 +53,12 @@ export default function OrderDetailModal({ open, onClose, order }) {
       alert(error?.response?.data?.msg || error?.message || "Failed to send message");
     },
   });
+
+  if (!order) return null;
+
+  const formattedDate = order.createdAt
+    ? format(new Date(order.createdAt), "MMM dd, yyyy • h:mm a")
+    : "N/A";
 
   return (
     <Dialog

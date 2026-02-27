@@ -191,7 +191,7 @@ router.post("/verify-cashfree-order", async (req, res) => {
     }
     order.set("status", enums.ORDER_STATUS.PAID);
     JobQueue.create({
-      type: "order-paid",
+      type: enums.JOB_TYPE.ORDER_PAID,
       context: {
         orderId,
       },
