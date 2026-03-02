@@ -8,8 +8,6 @@ import {
   Avatar,
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -17,13 +15,10 @@ import {
   DialogTitle,
   IconButton,
   MenuItem,
-  Pagination,
   Stack,
   TextField,
   Typography,
-  useMediaQuery,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import {
   Add as AddIcon,
   Call as CallIcon,
@@ -50,8 +45,6 @@ const STATUS_COLOR_MAP = {
 
 export default function GiftShopsPage() {
   const router = useRouter();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const queryClient = useQueryClient();
   const [pageState, setPageState] = useState({ page: 0, pageSize: 20 });
   const [globalFilter, setGlobalFilter] = useState("");
@@ -144,6 +137,59 @@ export default function GiftShopsPage() {
   const columns = useMemo(
     () => [
       {
+        id: "actions",
+        header: "Actions",
+        size: 190,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Stack direction="row" spacing={0.5}>
+            {row.original.websiteLink ? (
+              <IconButton
+                size="small"
+                color="secondary"
+                component="a"
+                href={row.original.websiteLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <OpenInNewIcon fontSize="small" />
+              </IconButton>
+            ) : null}
+            {row.original.mobileNumber ? (
+              <IconButton
+                size="small"
+                component="a"
+                href={`tel:${row.original.mobileNumber}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CallIcon fontSize="small" />
+              </IconButton>
+            ) : null}
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/admin/gift-shops/${row.original._id}`);
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(row.original._id);
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Stack>
+        ),
+      },
+      {
         accessorKey: "shopName",
         header: "Shop",
         size: 420,
@@ -228,49 +274,6 @@ export default function GiftShopsPage() {
         cell: ({ row }) =>
           new Date(row.original.updatedAt || row.original.createdAt).toLocaleString(),
       },
-      {
-        id: "actions",
-        header: "Actions",
-        size: 160,
-        enableSorting: false,
-        cell: ({ row }) => (
-          <Stack direction="row" spacing={1}>
-            {row.original.websiteLink ? (
-              <IconButton
-                size="small"
-                color="secondary"
-                component="a"
-                href={row.original.websiteLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <OpenInNewIcon fontSize="small" />
-              </IconButton>
-            ) : null}
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/admin/gift-shops/${row.original._id}`);
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              color="error"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(row.original._id);
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Stack>
-        ),
-      },
     ],
     [router],
   );
@@ -294,18 +297,6 @@ export default function GiftShopsPage() {
       </Stack>
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2 }}>
-        {isMobile ? (
-          <TextField
-            label="Search"
-            placeholder="Shop name, person, mobile, email"
-            value={globalFilter}
-            onChange={(e) => {
-              setGlobalFilter(e.target.value);
-              setPageState((prev) => ({ ...prev, page: 0 }));
-            }}
-            fullWidth
-          />
-        ) : null}
         <TextField
           select
           label="Status"
@@ -327,180 +318,27 @@ export default function GiftShopsPage() {
 
       {q.error ? <Alert severity="error">{q.error.message || "Failed to load gift shops"}</Alert> : null}
 
-      {isMobile ? (
-        <Box>
-          <Stack spacing={1.5}>
-            {(q.data?.giftShops || []).map((row) => (
-              <Card
-                key={row._id}
-                variant="outlined"
-                sx={{ cursor: "pointer", position: "relative" }}
-                onClick={() => router.push(`/admin/gift-shops/${row._id}`)}
-              >
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    display: "flex",
-                    gap: 0.5,
-                    zIndex: 2,
-                  }}
-                >
-                  {row.websiteLink ? (
-                    <IconButton
-                      size="small"
-                      component="a"
-                      href={row.websiteLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      sx={{ bgcolor: "background.paper", boxShadow: 1 }}
-                    >
-                      <OpenInNewIcon fontSize="inherit" />
-                    </IconButton>
-                  ) : null}
-                  {row.mobileNumber ? (
-                    <IconButton
-                      size="small"
-                      component="a"
-                      href={`tel:${row.mobileNumber}`}
-                      onClick={(e) => e.stopPropagation()}
-                      sx={{ bgcolor: "background.paper", boxShadow: 1 }}
-                    >
-                      <CallIcon fontSize="inherit" />
-                    </IconButton>
-                  ) : null}
-                </Box>
-                <CardContent sx={{ pb: "16px !important" }}>
-                  <Stack spacing={0.9}>
-                    <Stack direction="row" spacing={1.25} alignItems="flex-start">
-                      <Avatar
-                        src={row.photoLink || ""}
-                        variant="rounded"
-                        sx={{ width: 72, height: 72, fontSize: 12, flexShrink: 0 }}
-                      >
-                        GS
-                      </Avatar>
-                      <Box sx={{ minWidth: 0, pt: 0.1 }}>
-                        <Typography fontWeight={700}>{row.shopName}</Typography>
-                        <Typography variant="caption" color="text.secondary" display="block" noWrap>
-                          Person: {row.shopPersonName || "-"}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" display="block" noWrap>
-                          {row.mobileNumber || "-"}
-                        </Typography>
-                        <Stack direction="row" spacing={0.8} alignItems="center" flexWrap="wrap" sx={{ mt: 0.25 }}>
-                          <Chip
-                            size="small"
-                            label={GIFT_SHOP_STATUS_LABEL_MAP[row.status] || row.status || "-"}
-                            sx={{
-                              bgcolor: STATUS_COLOR_MAP[row.status]?.bg || "#ECEFF1",
-                              color: STATUS_COLOR_MAP[row.status]?.color || "#37474F",
-                              fontWeight: 600,
-                            }}
-                          />
-                          <Typography variant="caption" color="text.secondary">
-                            {row.source || "-"}
-                          </Typography>
-                        </Stack>
-                      </Box>
-                    </Stack>
-                    {row.email ? (
-                      <Typography variant="body2" color="text.secondary">
-                        {row.email}
-                      </Typography>
-                    ) : null}
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={(e) => handleOpenStatusModal(e, row)}
-                      >
-                        Update Status
-                      </Button>
-                    </Stack>
-                    {getLastComment(row.comments) ? (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 1,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        Last note: {getLastComment(row.comments)}
-                      </Typography>
-                    ) : null}
-                    <Typography variant="caption" color="text.secondary">
-                      Updated: {new Date(row.updatedAt || row.createdAt).toLocaleString()}
-                    </Typography>
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
-                      <Button
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/admin/gift-shops/${row._id}`);
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(row._id);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
-            ))}
-            {!q.isLoading && (q.data?.giftShops || []).length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                No gift shops found.
-              </Typography>
-            ) : null}
-          </Stack>
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-            <Pagination
-              count={Math.max(1, q.data?.pages || 1)}
-              page={pageState.page + 1}
-              color="primary"
-              onChange={(_, page) => setPageState((prev) => ({ ...prev, page: page - 1 }))}
-            />
-          </Box>
-        </Box>
-      ) : (
-        <DataTable
-          columns={columns}
-          data={q.data?.giftShops || []}
-          rowCount={q.data?.total || 0}
-          page={pageState.page}
-          pageSize={pageState.pageSize}
-          globalFilter={globalFilter}
-          loading={q.isLoading || q.isFetching}
-          onPageChange={(newPage) =>
-            setPageState((prev) => ({ ...prev, page: newPage }))
-          }
-          onPageSizeChange={(newPageSize) =>
-            setPageState({ page: 0, pageSize: newPageSize })
-          }
-          onGlobalFilterChange={(value) => {
-            setGlobalFilter(value);
-            setPageState((prev) => ({ ...prev, page: 0 }));
-          }}
-          onReload={() => q.refetch()}
-          onRowClick={(row) => router.push(`/admin/gift-shops/${row._id}`)}
-        />
-      )}
+      <DataTable
+        columns={columns}
+        data={q.data?.giftShops || []}
+        rowCount={q.data?.total || 0}
+        page={pageState.page}
+        pageSize={pageState.pageSize}
+        globalFilter={globalFilter}
+        loading={q.isLoading || q.isFetching}
+        onPageChange={(newPage) =>
+          setPageState((prev) => ({ ...prev, page: newPage }))
+        }
+        onPageSizeChange={(newPageSize) =>
+          setPageState({ page: 0, pageSize: newPageSize })
+        }
+        onGlobalFilterChange={(value) => {
+          setGlobalFilter(value);
+          setPageState((prev) => ({ ...prev, page: 0 }));
+        }}
+        onReload={() => q.refetch()}
+        onRowClick={(row) => router.push(`/admin/gift-shops/${row._id}`)}
+      />
 
       <Dialog
         open={statusModalOpen}
