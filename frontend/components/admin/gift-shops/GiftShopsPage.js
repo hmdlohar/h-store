@@ -5,11 +5,16 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   MenuItem,
   Pagination,
@@ -24,6 +29,7 @@ import {
   Call as CallIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
+  OpenInNew as OpenInNewIcon,
   Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import {
@@ -50,6 +56,10 @@ export default function GiftShopsPage() {
   const [pageState, setPageState] = useState({ page: 0, pageSize: 20 });
   const [globalFilter, setGlobalFilter] = useState("");
   const [status, setStatus] = useState("");
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [selectedShop, setSelectedShop] = useState(null);
+  const [nextStatus, setNextStatus] = useState("new");
+  const [statusComment, setStatusComment] = useState("");
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -81,6 +91,27 @@ export default function GiftShopsPage() {
     },
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ row, statusValue, comment }) => {
+      const updated = await ApiService.call(`/api/admin/gift-shops/${row._id}`, "put", {
+        ...row,
+        status: statusValue,
+      });
+      if (comment) {
+        await ApiService.call(`/api/admin/gift-shops/${row._id}/comments`, "post", {
+          comment,
+        });
+      }
+      return updated;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-gift-shops"] });
+      setStatusModalOpen(false);
+      setSelectedShop(null);
+      setStatusComment("");
+    },
+  });
+
   const handleDelete = (id) => {
     if (window.confirm("Delete this gift shop record?")) {
       deleteMutation.mutate(id);
@@ -97,63 +128,75 @@ export default function GiftShopsPage() {
       )[0]?.comment;
   };
 
+  const openStatusModal = (row) => {
+    setSelectedShop(row);
+    setNextStatus(row?.status || "new");
+    setStatusComment("");
+    setStatusModalOpen(true);
+  };
+
+  const handleOpenStatusModal = (e, row) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openStatusModal(row);
+  };
+
   const columns = useMemo(
     () => [
       {
         accessorKey: "shopName",
         header: "Shop",
-        size: 260,
+        size: 420,
         cell: ({ row }) => (
-          <Box>
-            <Typography fontWeight={600}>{row.original.shopName}</Typography>
-            {row.original.shopPersonName ? (
-              <Typography variant="caption" color="text.secondary">
-                {row.original.shopPersonName}
+          <Stack direction="row" spacing={1.25} alignItems="flex-start">
+            <Avatar
+              src={row.original.photoLink || ""}
+              variant="rounded"
+              sx={{ width: 72, height: 72, fontSize: 12, flexShrink: 0 }}
+            >
+              GS
+            </Avatar>
+            <Box sx={{ minWidth: 0, pt: 0.1 }}>
+              <Typography fontWeight={600}>{row.original.shopName}</Typography>
+              <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                Person: {row.original.shopPersonName || "-"}
               </Typography>
-            ) : null}
-          </Box>
-        ),
-      },
-      {
-        accessorKey: "mobileNumber",
-        header: "Contact",
-        size: 220,
-        cell: ({ row }) => (
-          <Box sx={{ minWidth: 0 }}>
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <Typography variant="body2">{row.original.mobileNumber || "-"}</Typography>
-              {row.original.mobileNumber ? (
-                <IconButton
+              <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                {row.original.mobileNumber || "-"}
+              </Typography>
+              <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mt: 0.25 }}>
+                <Chip
                   size="small"
-                  component="a"
-                  href={`tel:${row.original.mobileNumber}`}
-                  onClick={(e) => e.stopPropagation()}
-                  sx={{ p: 0.25 }}
-                >
-                  <CallIcon fontSize="inherit" />
-                </IconButton>
-              ) : null}
-            </Stack>
-            <Typography variant="caption" color="text.secondary">
-              {row.original.email || "-"}
-            </Typography>
-          </Box>
+                  label={GIFT_SHOP_STATUS_LABEL_MAP[row.original.status] || row.original.status || "-"}
+                  sx={{
+                    bgcolor: STATUS_COLOR_MAP[row.original.status]?.bg || "#ECEFF1",
+                    color: STATUS_COLOR_MAP[row.original.status]?.color || "#37474F",
+                    fontWeight: 600,
+                    height: 20,
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary" noWrap>
+                  {row.original.source || "-"}
+                </Typography>
+              </Stack>
+            </Box>
+          </Stack>
         ),
       },
       {
         accessorKey: "status",
-        header: "Status",
-        size: 160,
+        header: "Update",
+        size: 140,
         cell: ({ row }) => (
-          <Chip
-            size="small"
-            label={GIFT_SHOP_STATUS_LABEL_MAP[row.original.status] || row.original.status || "-"}
-            sx={{
-              bgcolor: STATUS_COLOR_MAP[row.original.status]?.bg || "#ECEFF1",
-              color: STATUS_COLOR_MAP[row.original.status]?.color || "#37474F",
-              fontWeight: 600,
-            }}
-          />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={(e) => handleOpenStatusModal(e, row.original)}
+            >
+              Update
+            </Button>
+          </Stack>
         ),
       },
       {
@@ -179,12 +222,6 @@ export default function GiftShopsPage() {
         ),
       },
       {
-        accessorKey: "source",
-        header: "Source",
-        size: 120,
-        cell: ({ row }) => row.original.source || "-",
-      },
-      {
         accessorKey: "updatedAt",
         header: "Updated",
         size: 190,
@@ -194,10 +231,23 @@ export default function GiftShopsPage() {
       {
         id: "actions",
         header: "Actions",
-        size: 120,
+        size: 160,
         enableSorting: false,
         cell: ({ row }) => (
           <Stack direction="row" spacing={1}>
+            {row.original.websiteLink ? (
+              <IconButton
+                size="small"
+                color="secondary"
+                component="a"
+                href={row.original.websiteLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <OpenInNewIcon fontSize="small" />
+              </IconButton>
+            ) : null}
             <IconButton
               size="small"
               color="primary"
@@ -284,44 +334,91 @@ export default function GiftShopsPage() {
               <Card
                 key={row._id}
                 variant="outlined"
-                sx={{ cursor: "pointer" }}
+                sx={{ cursor: "pointer", position: "relative" }}
                 onClick={() => router.push(`/admin/gift-shops/${row._id}`)}
               >
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    display: "flex",
+                    gap: 0.5,
+                    zIndex: 2,
+                  }}
+                >
+                  {row.websiteLink ? (
+                    <IconButton
+                      size="small"
+                      component="a"
+                      href={row.websiteLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      sx={{ bgcolor: "background.paper", boxShadow: 1 }}
+                    >
+                      <OpenInNewIcon fontSize="inherit" />
+                    </IconButton>
+                  ) : null}
+                  {row.mobileNumber ? (
+                    <IconButton
+                      size="small"
+                      component="a"
+                      href={`tel:${row.mobileNumber}`}
+                      onClick={(e) => e.stopPropagation()}
+                      sx={{ bgcolor: "background.paper", boxShadow: 1 }}
+                    >
+                      <CallIcon fontSize="inherit" />
+                    </IconButton>
+                  ) : null}
+                </Box>
                 <CardContent sx={{ pb: "16px !important" }}>
-                  <Stack spacing={0.6}>
-                    <Typography fontWeight={700}>{row.shopName}</Typography>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <Typography variant="body2">Mobile: {row.mobileNumber || "-"}</Typography>
-                      {row.mobileNumber ? (
-                        <IconButton
-                          size="small"
-                          component="a"
-                          href={`tel:${row.mobileNumber}`}
-                          onClick={(e) => e.stopPropagation()}
-                          sx={{ p: 0.25 }}
-                        >
-                          <CallIcon fontSize="inherit" />
-                        </IconButton>
-                      ) : null}
+                  <Stack spacing={0.9}>
+                    <Stack direction="row" spacing={1.25} alignItems="flex-start">
+                      <Avatar
+                        src={row.photoLink || ""}
+                        variant="rounded"
+                        sx={{ width: 72, height: 72, fontSize: 12, flexShrink: 0 }}
+                      >
+                        GS
+                      </Avatar>
+                      <Box sx={{ minWidth: 0, pt: 0.1 }}>
+                        <Typography fontWeight={700}>{row.shopName}</Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                          Person: {row.shopPersonName || "-"}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" noWrap>
+                          {row.mobileNumber || "-"}
+                        </Typography>
+                        <Stack direction="row" spacing={0.8} alignItems="center" flexWrap="wrap" sx={{ mt: 0.25 }}>
+                          <Chip
+                            size="small"
+                            label={GIFT_SHOP_STATUS_LABEL_MAP[row.status] || row.status || "-"}
+                            sx={{
+                              bgcolor: STATUS_COLOR_MAP[row.status]?.bg || "#ECEFF1",
+                              color: STATUS_COLOR_MAP[row.status]?.color || "#37474F",
+                              fontWeight: 600,
+                            }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            {row.source || "-"}
+                          </Typography>
+                        </Stack>
+                      </Box>
                     </Stack>
                     {row.email ? (
                       <Typography variant="body2" color="text.secondary">
                         {row.email}
                       </Typography>
                     ) : null}
-                    <Stack direction="row" spacing={0.8} alignItems="center" flexWrap="wrap">
-                      <Chip
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Button
                         size="small"
-                        label={GIFT_SHOP_STATUS_LABEL_MAP[row.status] || row.status || "-"}
-                        sx={{
-                          bgcolor: STATUS_COLOR_MAP[row.status]?.bg || "#ECEFF1",
-                          color: STATUS_COLOR_MAP[row.status]?.color || "#37474F",
-                          fontWeight: 600,
-                        }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {row.source || "-"}
-                      </Typography>
+                        variant="outlined"
+                        onClick={(e) => handleOpenStatusModal(e, row)}
+                      >
+                        Update Status
+                      </Button>
                     </Stack>
                     {getLastComment(row.comments) ? (
                       <Typography
@@ -404,6 +501,63 @@ export default function GiftShopsPage() {
           onRowClick={(row) => router.push(`/admin/gift-shops/${row._id}`)}
         />
       )}
+
+      <Dialog
+        open={statusModalOpen}
+        onClose={() => setStatusModalOpen(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Update Status</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Shop"
+              value={selectedShop?.shopName || ""}
+              disabled
+              fullWidth
+            />
+            <TextField
+              select
+              label="New Status"
+              value={nextStatus}
+              onChange={(e) => setNextStatus(e.target.value)}
+              fullWidth
+            >
+              {GIFT_SHOP_STATUS_OPTIONS.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Comment"
+              placeholder="Optional note for this status update"
+              value={statusComment}
+              onChange={(e) => setStatusComment(e.target.value)}
+              multiline
+              minRows={3}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setStatusModalOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={!selectedShop || updateStatusMutation.isPending}
+            onClick={() =>
+              updateStatusMutation.mutate({
+                row: selectedShop,
+                statusValue: nextStatus,
+                comment: statusComment.trim(),
+              })
+            }
+          >
+            {updateStatusMutation.isPending ? "Saving..." : "Update"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

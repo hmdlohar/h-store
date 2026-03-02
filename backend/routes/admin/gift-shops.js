@@ -18,8 +18,10 @@ const normalizeStringList = (value) => {
   return [];
 };
 
+const normalizeExternalId = (value) => String(value || "").trim().toLowerCase();
+
 const cleanPayload = (body = {}) => ({
-  externalId: String(body.externalId || "").trim(),
+  externalId: normalizeExternalId(body.externalId),
   shopName: String(body.shopName || "").trim(),
   shopPersonName: String(body.shopPersonName || "").trim(),
   mobileNumber: String(body.mobileNumber || "").trim(),
@@ -31,6 +33,11 @@ const cleanPayload = (body = {}) => ({
   photoLink: String(body.photoLink || "").trim(),
   websiteLink: String(body.websiteLink || "").trim(),
   additionalLinks: normalizeStringList(body.additionalLinks),
+  addressLine1: String(body.addressLine1 || "").trim(),
+  addressLine2: String(body.addressLine2 || "").trim(),
+  city: String(body.city || "").trim(),
+  state: String(body.state || "").trim(),
+  zipCode: String(body.zipCode || "").trim(),
   source: body.source,
   status: body.status,
   statusMeta: String(body.statusMeta || "").trim(),
@@ -58,6 +65,10 @@ router.get("/", async (req, res) => {
         { shopPersonName: regex },
         { mobileNumber: regex },
         { email: regex },
+        { city: regex },
+        { state: regex },
+        { zipCode: regex },
+        { addressLine1: regex },
       ];
     }
 
@@ -103,6 +114,13 @@ router.post("/", async (req, res) => {
       return res.sendError("validationError", "Shop name is required", 400);
     }
 
+    if (payload.externalId) {
+      const existing = await GiftShopModel.exists({ externalId: payload.externalId });
+      if (existing) {
+        return res.sendError("duplicateExternalId", "External ID already exists", 409);
+      }
+    }
+
     const giftShop = new GiftShopModel({
       ...payload,
       createdVia: "admin",
@@ -137,6 +155,16 @@ router.put("/:id", async (req, res) => {
     const giftShop = await GiftShopModel.findById(req.params.id).exec();
     if (!giftShop) {
       return res.sendError(null, "Gift shop not found", 404);
+    }
+
+    if (payload.externalId) {
+      const existing = await GiftShopModel.exists({
+        externalId: payload.externalId,
+        _id: { $ne: req.params.id },
+      });
+      if (existing) {
+        return res.sendError("duplicateExternalId", "External ID already exists", 409);
+      }
     }
 
     Object.assign(giftShop, payload, {

@@ -70,6 +70,31 @@ const GiftShopSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    addressLine1: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    addressLine2: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    city: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    state: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    zipCode: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     source: {
       type: String,
       enum: ["google-maps", "justdial", "manual", "other"],

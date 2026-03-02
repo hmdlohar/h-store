@@ -18,10 +18,12 @@ const normalizeStringList = (value) => {
   return [];
 };
 
+const normalizeExternalId = (value) => String(value || "").trim().toLowerCase();
+
 router.post("/", async (req, res) => {
   try {
     const payload = {
-      externalId: String(req.body.externalId || "").trim(),
+      externalId: normalizeExternalId(req.body.externalId),
       shopName: String(req.body.shopName || "").trim(),
       shopPersonName: String(req.body.shopPersonName || "").trim(),
       mobileNumber: String(req.body.mobileNumber || "").trim(),
@@ -33,6 +35,11 @@ router.post("/", async (req, res) => {
       photoLink: String(req.body.photoLink || "").trim(),
       websiteLink: String(req.body.websiteLink || "").trim(),
       additionalLinks: normalizeStringList(req.body.additionalLinks),
+      addressLine1: String(req.body.addressLine1 || "").trim(),
+      addressLine2: String(req.body.addressLine2 || "").trim(),
+      city: String(req.body.city || "").trim(),
+      state: String(req.body.state || "").trim(),
+      zipCode: String(req.body.zipCode || "").trim(),
       source: ["google-maps", "justdial", "manual", "other"].includes(req.body.source)
         ? req.body.source
         : "manual",
@@ -45,6 +52,13 @@ router.post("/", async (req, res) => {
 
     if (!payload.shopName) {
       return res.sendError("validationError", "Shop name is required", 400);
+    }
+
+    if (payload.externalId) {
+      const existing = await GiftShopModel.exists({ externalId: payload.externalId });
+      if (existing) {
+        return res.sendError("duplicateExternalId", "External ID already exists", 409);
+      }
     }
 
     const giftShop = new GiftShopModel(payload);
@@ -76,7 +90,7 @@ router.post("/verify", async (req, res) => {
         : [];
 
     const normalizedIds = ids
-      .map((item) => String(item || "").trim())
+      .map((item) => normalizeExternalId(item))
       .filter(Boolean);
 
     if (!normalizedIds.length) {

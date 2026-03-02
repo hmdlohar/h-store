@@ -30,6 +30,11 @@ const defaultGiftShop = {
   photoLink: "",
   websiteLink: "",
   additionalLinks: [],
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  zipCode: "",
   source: "manual",
   status: "new",
   statusMeta: "",
@@ -225,6 +230,41 @@ export default function GiftShopEditPage() {
               helperText="Comma separated"
               fullWidth
             />
+
+            <TextField
+              label="Address Line 1"
+              value={giftShop.addressLine1}
+              onChange={(e) => handleField("addressLine1", e.target.value)}
+              fullWidth
+            />
+
+            <TextField
+              label="Address Line 2"
+              value={giftShop.addressLine2}
+              onChange={(e) => handleField("addressLine2", e.target.value)}
+              fullWidth
+            />
+
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+              <TextField
+                label="City"
+                value={giftShop.city}
+                onChange={(e) => handleField("city", e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="State"
+                value={giftShop.state}
+                onChange={(e) => handleField("state", e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="ZIP Code"
+                value={giftShop.zipCode}
+                onChange={(e) => handleField("zipCode", e.target.value)}
+                fullWidth
+              />
+            </Stack>
 
             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
               <TextField
