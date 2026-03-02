@@ -104,4 +104,6 @@ router.get("/home-page-config", async (req, res) => {
   res.sendSuccess(homePageConfig, "Home page config fetched successfully");
 });
 
+router.use("/gift-shops", require("./public-gift-shop"));
+
 module.exports = router;
