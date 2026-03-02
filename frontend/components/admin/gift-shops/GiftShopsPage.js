@@ -24,6 +24,7 @@ import {
   Call as CallIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import {
   GIFT_SHOP_STATUS_LABEL_MAP,
@@ -228,13 +229,18 @@ export default function GiftShopsPage() {
     <Box>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
         <Typography variant="h5">Gift Shops</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => router.push("/admin/gift-shops/new")}
-        >
-          Add Gift Shop
-        </Button>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <IconButton onClick={() => q.refetch()} title="Reload list">
+            <RefreshIcon />
+          </IconButton>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => router.push("/admin/gift-shops/new")}
+          >
+            Add Gift Shop
+          </Button>
+        </Stack>
       </Stack>
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2 }}>

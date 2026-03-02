@@ -19,6 +19,7 @@ const normalizeStringList = (value) => {
 };
 
 const cleanPayload = (body = {}) => ({
+  externalId: String(body.externalId || "").trim(),
   shopName: String(body.shopName || "").trim(),
   shopPersonName: String(body.shopPersonName || "").trim(),
   mobileNumber: String(body.mobileNumber || "").trim(),
@@ -52,6 +53,7 @@ router.get("/", async (req, res) => {
     if (q) {
       const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       filter.$or = [
+        { externalId: regex },
         { shopName: regex },
         { shopPersonName: regex },
         { mobileNumber: regex },
@@ -118,6 +120,9 @@ router.post("/", async (req, res) => {
     await giftShop.save();
     res.sendSuccess(giftShop, "Gift shop created successfully");
   } catch (err) {
+    if (err?.code === 11000) {
+      return res.sendError("duplicateExternalId", "External ID already exists", 409);
+    }
     res.sendError(err, "Error creating gift shop", 500);
   }
 });
@@ -141,6 +146,9 @@ router.put("/:id", async (req, res) => {
     await giftShop.save();
     res.sendSuccess(giftShop, "Gift shop updated successfully");
   } catch (err) {
+    if (err?.code === 11000) {
+      return res.sendError("duplicateExternalId", "External ID already exists", 409);
+    }
     res.sendError(err, "Error updating gift shop", 500);
   }
 });

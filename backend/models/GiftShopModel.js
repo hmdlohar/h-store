@@ -22,6 +22,11 @@ const GiftShopCommentSchema = new mongoose.Schema(
 
 const GiftShopSchema = new mongoose.Schema(
   {
+    externalId: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     shopName: {
       type: String,
       required: true,
@@ -116,5 +121,13 @@ const GiftShopSchema = new mongoose.Schema(
 
 GiftShopSchema.index({ shopName: 1 });
 GiftShopSchema.index({ status: 1, createdAt: -1 });
+GiftShopSchema.index(
+  { externalId: 1 },
+  {
+    unique: true,
+    sparse: true,
+    partialFilterExpression: { externalId: { $type: "string", $ne: "" } },
+  },
+);
 
 module.exports = mongoose.model("GiftShop", GiftShopSchema);

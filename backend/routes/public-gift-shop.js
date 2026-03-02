@@ -21,6 +21,7 @@ const normalizeStringList = (value) => {
 router.post("/", async (req, res) => {
   try {
     const payload = {
+      externalId: String(req.body.externalId || "").trim(),
       shopName: String(req.body.shopName || "").trim(),
       shopPersonName: String(req.body.shopPersonName || "").trim(),
       mobileNumber: String(req.body.mobileNumber || "").trim(),
@@ -52,13 +53,54 @@ router.post("/", async (req, res) => {
     res.sendSuccess(
       {
         _id: giftShop._id,
+        externalId: giftShop.externalId,
         shopName: giftShop.shopName,
         status: giftShop.status,
       },
       "Gift shop created successfully",
     );
   } catch (err) {
+    if (err?.code === 11000) {
+      return res.sendError("duplicateExternalId", "External ID already exists", 409);
+    }
     res.sendError(err, "Error creating gift shop", 500);
+  }
+});
+
+router.post("/verify", async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.ids)
+      ? req.body.ids
+      : Array.isArray(req.body?.externalIds)
+        ? req.body.externalIds
+        : [];
+
+    const normalizedIds = ids
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+
+    if (!normalizedIds.length) {
+      return res.sendSuccess({ existingIds: [] }, "No IDs provided");
+    }
+
+    const existingRows = await GiftShopModel.find({
+      externalId: { $in: normalizedIds },
+    })
+      .select({ externalId: 1, _id: 0 })
+      .lean();
+
+    const existingIds = existingRows
+      .map((row) => row.externalId)
+      .filter(Boolean);
+
+    res.sendSuccess(
+      {
+        existingIds,
+      },
+      "Verified successfully",
+    );
+  } catch (err) {
+    res.sendError(err, "Error verifying gift shop IDs", 500);
   }
 });
 

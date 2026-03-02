@@ -20,6 +20,7 @@ import {
 } from "./constants";
 
 const defaultGiftShop = {
+  externalId: "",
   shopName: "",
   shopPersonName: "",
   mobileNumber: "",
@@ -153,6 +154,13 @@ export default function GiftShopEditPage() {
               value={giftShop.shopName}
               onChange={(e) => handleField("shopName", e.target.value)}
               required
+              fullWidth
+            />
+            <TextField
+              label="External ID"
+              value={giftShop.externalId || ""}
+              onChange={(e) => handleField("externalId", e.target.value)}
+              helperText="Unique ID from source system"
               fullWidth
             />
             <TextField
