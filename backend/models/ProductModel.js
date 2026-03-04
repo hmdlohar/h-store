@@ -71,6 +71,12 @@ var ProductSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  shipping: {
+    weight: { type: Number, default: 0 }, // in grams
+    length: { type: Number, default: 0 }, // in cm
+    breadth: { type: Number, default: 0 }, // in cm
+    height: { type: Number, default: 0 }, // in cm
+  },
   specifications: {
     type: Object,
     default: {},

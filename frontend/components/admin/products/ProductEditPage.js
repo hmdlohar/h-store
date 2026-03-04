@@ -45,6 +45,12 @@ const defaultProduct = {
   reviewCount: 0,
   boughtCount: 0,
   specifications: {},
+  shipping: {
+    weight: "",
+    length: "",
+    breadth: "",
+    height: "",
+  },
 };
 
 const defaultImage = { imagePath: "" };
@@ -101,6 +107,12 @@ export default function ProductEditPage() {
         rating: parseFloat(productData.rating) || 0,
         reviewCount: parseInt(productData.reviewCount) || 0,
         boughtCount: parseInt(productData.boughtCount) || 0,
+        shipping: {
+          weight: parseFloat(productData.shipping?.weight) || 0,
+          length: parseFloat(productData.shipping?.length) || 0,
+          breadth: parseFloat(productData.shipping?.breadth) || 0,
+          height: parseFloat(productData.shipping?.height) || 0,
+        },
       };
 
       if (isNew) {
@@ -416,6 +428,48 @@ export default function ProductEditPage() {
                   }
                   label="Active"
                 />
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            {/* Shipping Details */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Shipping Details
+              </Typography>
+              <Stack spacing={2}>
+                <TextField
+                  label="Weight (grams)"
+                  type="number"
+                  value={product.shipping?.weight || ""}
+                  onChange={(e) => handleChange("shipping", { ...product.shipping, weight: e.target.value })}
+                  fullWidth
+                  helperText="Weight of the product in grams"
+                />
+                <Stack direction="row" spacing={2}>
+                  <TextField
+                    label="Length (cm)"
+                    type="number"
+                    value={product.shipping?.length || ""}
+                    onChange={(e) => handleChange("shipping", { ...product.shipping, length: e.target.value })}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Breadth (cm)"
+                    type="number"
+                    value={product.shipping?.breadth || ""}
+                    onChange={(e) => handleChange("shipping", { ...product.shipping, breadth: e.target.value })}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Height (cm)"
+                    type="number"
+                    value={product.shipping?.height || ""}
+                    onChange={(e) => handleChange("shipping", { ...product.shipping, height: e.target.value })}
+                    fullWidth
+                  />
+                </Stack>
               </Stack>
             </Box>
 

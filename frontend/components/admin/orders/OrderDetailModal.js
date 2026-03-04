@@ -16,11 +16,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import { format } from "date-fns";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
+import { useState } from "react";
 
 const statusColors = {
   paid: "success",
@@ -32,6 +38,35 @@ const statusColors = {
 
 export default function OrderDetailModal({ open, onClose, order }) {
   const orderId = order?._id;
+  const [shippingAnchorEl, setShippingAnchorEl] = useState(null);
+
+  const { data: providersData } = useQuery({
+    queryKey: ["shipping-providers"],
+    queryFn: async () => {
+      const res = await ApiService.call("/api/admin/shipping/providers", "get");
+      return res;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const shipOrderMutation = useMutation({
+    mutationFn: async (provider) => {
+      if (!orderId) {
+        throw new Error("Order not found");
+      }
+      return await ApiService.call(`/api/admin/shipping/${orderId}/ship-with/${provider}`, "post", {});
+    },
+    onSuccess: (data) => {
+      alert(`Order shipped successfully! Tracking: ${data.trackingNumber || 'N/A'}`);
+      setShippingAnchorEl(null);
+    },
+    onError: (error) => {
+      alert(error?.response?.data?.msg || error?.message || "Failed to ship order");
+    },
+  });
+
+  const providers = providersData?.providers || [];
+  const existingShipments = order?.shipping?.shipments || [];
 
   const sendMessageMutation = useMutation({
     mutationFn: async (channel) => {
@@ -205,7 +240,7 @@ export default function OrderDetailModal({ open, onClose, order }) {
         </Grid>
       </DialogContent>
 
-      <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+      <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", gap: 2, flexWrap: "wrap" }}>
         <Button
           variant="outlined"
           onClick={() => sendMessageMutation.mutate("whatsapp")}
@@ -220,6 +255,65 @@ export default function OrderDetailModal({ open, onClose, order }) {
         >
           Send Order Placed Email
         </Button>
+        
+        {/* Shipping Buttons */}
+        {providers.length > 0 && (
+          <>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<LocalShippingIcon />}
+              onClick={(e) => setShippingAnchorEl(e.currentTarget)}
+              disabled={shipOrderMutation.isPending}
+            >
+              Add to Shipping
+            </Button>
+            <Menu
+              anchorEl={shippingAnchorEl}
+              open={Boolean(shippingAnchorEl)}
+              onClose={() => setShippingAnchorEl(null)}
+            >
+              {providers.map((provider) => {
+                const isAlreadyShipped = existingShipments.some(s => s.provider === provider.id);
+                return (
+                  <MenuItem
+                    key={provider.id}
+                    onClick={() => {
+                      setShippingAnchorEl(null);
+                      if (!isAlreadyShipped) {
+                        shipOrderMutation.mutate(provider.id);
+                      }
+                    }}
+                    disabled={isAlreadyShipped || shipOrderMutation.isPending}
+                  >
+                    <ListItemIcon>
+                      <LocalShippingIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>
+                      {isAlreadyShipped ? `${provider.displayName} (Already Shipped)` : `Add to ${provider.displayName}`}
+                    </ListItemText>
+                  </MenuItem>
+                );
+              })}
+            </Menu>
+          </>
+        )}
+
+        {/* Show existing shipments */}
+        {existingShipments.length > 0 && (
+          <Box sx={{ width: '100%', mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {existingShipments.map((shipment, index) => (
+              <Chip
+                key={index}
+                label={`${shipment.provider}: ${shipment.trackingNumber || shipment.shipmentId || 'No AWB'}`}
+                color="success"
+                variant="outlined"
+                size="small"
+              />
+            ))}
+          </Box>
+        )}
+
         <Button variant="outlined" color="primary">
           Update Status
         </Button>
