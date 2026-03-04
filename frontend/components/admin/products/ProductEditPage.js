@@ -181,10 +181,21 @@ export default function ProductEditPage() {
   const handleUpdateCustomization = (index, field, value) => {
     setProduct((prev) => {
       const newCustomizations = [...prev.customizations];
-      newCustomizations[index] = {
-        ...newCustomizations[index],
-        [field]: value,
-      };
+      if (field.startsWith("info.")) {
+        const infoField = field.replace("info.", "");
+        newCustomizations[index] = {
+          ...newCustomizations[index],
+          info: {
+            ...newCustomizations[index].info,
+            [infoField]: value,
+          },
+        };
+      } else {
+        newCustomizations[index] = {
+          ...newCustomizations[index],
+          [field]: value,
+        };
+      }
       return { ...prev, customizations: newCustomizations };
     });
   };
@@ -667,6 +678,38 @@ export default function ProductEditPage() {
                           }
                           label="Required"
                         />
+                        {(cust.fieldType === "text" || cust.fieldType === "text_alphabet") && (
+                          <Stack direction="row" spacing={2}>
+                            <TextField
+                              label="Min Length"
+                              type="number"
+                              value={cust.info?.minLength || ""}
+                              onChange={(e) =>
+                                handleUpdateCustomization(
+                                  index,
+                                  "info.minLength",
+                                  e.target.value ? parseInt(e.target.value) : ""
+                                )
+                              }
+                              size="small"
+                              sx={{ width: 150 }}
+                            />
+                            <TextField
+                              label="Max Length"
+                              type="number"
+                              value={cust.info?.maxLength || ""}
+                              onChange={(e) =>
+                                handleUpdateCustomization(
+                                  index,
+                                  "info.maxLength",
+                                  e.target.value ? parseInt(e.target.value) : ""
+                                )
+                              }
+                              size="small"
+                              sx={{ width: 150 }}
+                            />
+                          </Stack>
+                        )}
                         {cust.fieldType === "color" && (
                           <Box>
                             <Typography variant="subtitle2" gutterBottom>
