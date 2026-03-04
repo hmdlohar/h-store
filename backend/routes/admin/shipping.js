@@ -31,19 +31,27 @@ router.post("/:id/ship-with/:provider", async (req, res) => {
       return res.sendError("notFound", "Order not found", 404);
     }
 
-    if (order.shipping?.shipments?.some(s => s.provider === provider)) {
-      return res.sendError("alreadyShipped", "Order already shipped with this provider", 400);
+    if (order.shipping?.shipments?.some((s) => s.provider === provider)) {
+      return res.sendError(
+        "alreadyShipped",
+        "Order already shipped with this provider",
+        400,
+      );
     }
 
-    const productIds = order.items.map(item => item.productId);
-    const products = await ProductModel.find({ _id: { $in: productIds } }).lean();
+    const productIds = order.items.map((item) => item.productId);
+    const products = await ProductModel.find({
+      _id: { $in: productIds },
+    }).lean();
     const productsMap = products.reduce((acc, product) => {
       acc[product._id] = product;
       return acc;
     }, {});
 
-    const pickupAddress = pickupAddressId 
-      ? shippingService.getPickupAddresses().find(p => p.id === pickupAddressId)
+    const pickupAddress = pickupAddressId
+      ? shippingService
+          .getPickupAddresses()
+          .find((p) => p.id === pickupAddressId)
       : shippingService.getDefaultPickupAddress();
 
     const result = await shippingService.createShipment(order, provider, {
@@ -87,13 +95,13 @@ router.get("/:id/shipping-status", async (req, res) => {
         try {
           const tracking = await shippingService.trackShipment(
             shipment.provider,
-            shipment.trackingNumber
+            shipment.trackingNumber,
           );
           return { ...shipment, tracking };
         } catch (error) {
           return { ...shipment, trackingError: error.message };
         }
-      })
+      }),
     );
 
     res.sendSuccess({
@@ -115,12 +123,21 @@ router.post("/:id/track-shipment/:provider", async (req, res) => {
       return res.sendError("notFound", "Order not found", 404);
     }
 
-    const shipment = order.shipping?.shipments?.find(s => s.provider === provider);
+    const shipment = order.shipping?.shipments?.find(
+      (s) => s.provider === provider,
+    );
     if (!shipment?.trackingNumber) {
-      return res.sendError("noShipment", "No shipment found for this provider", 404);
+      return res.sendError(
+        "noShipment",
+        "No shipment found for this provider",
+        404,
+      );
     }
 
-    const tracking = await shippingService.trackShipment(provider, shipment.trackingNumber);
+    const tracking = await shippingService.trackShipment(
+      provider,
+      shipment.trackingNumber,
+    );
     res.sendSuccess(tracking);
   } catch (error) {
     console.error("Error tracking shipment:", error);
@@ -137,12 +154,21 @@ router.post("/:id/cancel-shipment/:provider", async (req, res) => {
       return res.sendError("notFound", "Order not found", 404);
     }
 
-    const shipment = order.shipping?.shipments?.find(s => s.provider === provider);
+    const shipment = order.shipping?.shipments?.find(
+      (s) => s.provider === provider,
+    );
     if (!shipment?.shipmentId) {
-      return res.sendError("noShipment", "No shipment found for this provider", 404);
+      return res.sendError(
+        "noShipment",
+        "No shipment found for this provider",
+        404,
+      );
     }
 
-    const result = await shippingService.cancelShipment(provider, shipment.shipmentId);
+    const result = await shippingService.cancelShipment(
+      provider,
+      shipment.shipmentId,
+    );
 
     await OrderModel.findByIdAndUpdate(id, {
       $set: { "shipping.shipments.$[elem].status": "cancelled" },
@@ -165,16 +191,138 @@ router.get("/:id/generate-label/:provider", async (req, res) => {
       return res.sendError("notFound", "Order not found", 404);
     }
 
-    const shipment = order.shipping?.shipments?.find(s => s.provider === provider);
+    const shipment = order.shipping?.shipments?.find(
+      (s) => s.provider === provider,
+    );
     if (!shipment?.shipmentId) {
-      return res.sendError("noShipment", "No shipment found for this provider", 404);
+      return res.sendError(
+        "noShipment",
+        "No shipment found for this provider",
+        404,
+      );
     }
 
-    const label = await shippingService.generateLabel(provider, shipment.shipmentId);
+    const label = await shippingService.generateLabel(
+      provider,
+      shipment.shipmentId,
+    );
     res.sendSuccess(label);
   } catch (error) {
     console.error("Error generating label:", error);
     res.sendError(`Failed to generate label: ${error.message}`, 500);
+  }
+});
+
+router.post("/:id/add-to-hmdapp", async (req, res) => {
+  const { id } = req.params;
+  const axios = require("axios");
+
+  try {
+    const order = await OrderModel.findById(id).lean();
+    if (!order) {
+      return res.sendError("notFound", "Order not found", 404);
+    }
+
+    if (order.info?.hmdappOrderId) {
+      return res.sendError(
+        "alreadyAdded",
+        "Order already added to hmdapp",
+        400,
+      );
+    }
+
+    const orderItems = order.items?.[0];
+    const customization = orderItems?.customization || {};
+
+    // Check for required customization fields
+    const customName1 = customization.name1;
+    const customName2 = customization.name2;
+    const colorCode = customization.color;
+
+    // Validate customization exists
+    if (!customName1 && !customName2) {
+      return res.sendError(
+        "noCustomization",
+        "This order does not have customization information (Name1, Name2, or Color). Hmdapp is only for customized orders.",
+        400,
+      );
+    }
+
+    // Get color name from product customization options
+    let colorName = "Warm White";
+    if (colorCode) {
+      const product = await ProductModel.findById(orderItems.productId).lean();
+      const colorField = product?.customizations?.find(
+        (c) => c.field === "color",
+      );
+      if (colorField?.options) {
+        const colorOption = colorField.options.find(
+          (opt) => opt.code === colorCode,
+        );
+        if (colorOption?.name) {
+          colorName = colorOption.name;
+        }
+      }
+    }
+
+    const productName = orderItems?.productName || "Custom Neon Sign";
+
+    const hmdappPayload = {
+      action: "amazonOrders/amazon-public-create",
+      OrderID: order.orderNumber || order._id,
+      CustomerName: order.deliveryAddress?.name || "Customer",
+      ProductType: productName,
+      OrderDate: order.createdAt
+        ? new Date(order.createdAt)
+            .toISOString()
+            .replace("T", " ")
+            .split(".")[0]
+        : new Date().toISOString().replace("T", " ").split(".")[0],
+      ShipByDate: (() => {
+        const d = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}/${month}/${day}`;
+      })(),
+      CustomName1: customName1 || "",
+      CustomName2: customName2 || "",
+      CustomColor: colorName,
+      ItemTotal: order.amount,
+      IsShipped: false,
+      Address: `${order.deliveryAddress?.home || ""}, ${order.deliveryAddress?.area || ""}, ${order.deliveryAddress?.city || ""}, ${order.deliveryAddress?.state || ""}, ${order.deliveryAddress?.pincode || ""}`,
+      MobileNo: order.deliveryAddress?.mobile || "",
+      OrderType: "SelfShip",
+    };
+
+    const response = await axios.post(
+      "https://hmdapp.vercel.app/api/rpc",
+      hmdappPayload,
+      {
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
+    const hmdappOrderId =
+      response.data?.result?.OrderID || response.data?.order_id;
+
+    await OrderModel.findByIdAndUpdate(id, {
+      $set: {
+        "info.hmdappOrderId": hmdappOrderId,
+        "info.hmdappResponse": response.data,
+      },
+    });
+
+    res.sendSuccess(
+      { hmdappOrderId, response: response.data },
+      "Order added to hmdapp successfully",
+    );
+  } catch (error) {
+    console.error("Error adding to hmdapp:", error);
+    res.sendError(
+      `Failed to add to hmdapp: ${error.response?.data?.message || error.message}`,
+      500,
+    );
   }
 });
 

@@ -23,6 +23,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import StoreIcon from "@mui/icons-material/Store";
 import { format } from "date-fns";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
@@ -67,6 +68,27 @@ export default function OrderDetailModal({ open, onClose, order }) {
 
   const providers = providersData?.providers || [];
   const existingShipments = order?.shipping?.shipments || [];
+  const hmdappOrderId = order?.info?.hmdappOrderId;
+  
+  // Check if order has customization
+  const orderItems = order?.items?.[0] || {};
+  const customization = orderItems?.customization || {};
+  const hasCustomization = !!(customization.Name || customization.name || customization.Name2 || customization.name2 || customization.Color || customization.color);
+
+  const addToHmdappMutation = useMutation({
+    mutationFn: async () => {
+      if (!orderId) {
+        throw new Error("Order not found");
+      }
+      return await ApiService.call(`/api/admin/shipping/${orderId}/add-to-hmdapp`, "post", {});
+    },
+    onSuccess: (data) => {
+      alert(`Order added to hmdapp! Order ID: ${data.hmdappOrderId || 'N/A'}`);
+    },
+    onError: (error) => {
+      alert(error?.response?.data?.msg || error?.message || "Failed to add to hmdapp");
+    },
+  });
 
   const sendMessageMutation = useMutation({
     mutationFn: async (channel) => {
@@ -298,6 +320,18 @@ export default function OrderDetailModal({ open, onClose, order }) {
             </Menu>
           </>
         )}
+
+        {/* Hmdapp Button */}
+        <Button
+          variant="contained"
+          color="info"
+          startIcon={<StoreIcon />}
+          onClick={() => addToHmdappMutation.mutate()}
+          disabled={addToHmdappMutation.isPending || !!hmdappOrderId || !hasCustomization}
+          title={!hasCustomization ? "Order must have customization (Name or Color) to add to Hmdapp" : ""}
+        >
+          {hmdappOrderId ? `Hmdapp: ${hmdappOrderId}` : "Add to Hmdapp"}
+        </Button>
 
         {/* Show existing shipments */}
         {existingShipments.length > 0 && (
