@@ -190,6 +190,10 @@ export default function OrdersPage() {
         open={!!selectedOrder}
         onClose={() => setSelectedOrder(null)}
         order={selectedOrder}
+        onOrderUpdated={(updatedOrder) => {
+          setSelectedOrder(updatedOrder);
+          q.refetch();
+        }}
       />
     </Box>
   );

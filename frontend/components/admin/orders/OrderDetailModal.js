@@ -37,15 +37,28 @@ import { useState } from "react";
 const statusColors = {
   paid: "success",
   pending: "warning",
+  finalized: "warning",
   cancelled: "error",
+  shipped: "primary",
   delivered: "info",
   processing: "secondary",
 };
 
-export default function OrderDetailModal({ open, onClose, order }) {
+const orderStatusOptions = [
+  { value: "pending", label: "Pending" },
+  { value: "finalized", label: "Finalized" },
+  { value: "paid", label: "Paid" },
+  { value: "processing", label: "Processing" },
+  { value: "shipped", label: "Shipped" },
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
+export default function OrderDetailModal({ open, onClose, order, onOrderUpdated }) {
   const orderId = order?._id;
   const [shippingAnchorEl, setShippingAnchorEl] = useState(null);
   const [messageAnchorEl, setMessageAnchorEl] = useState(null);
+  const [statusAnchorEl, setStatusAnchorEl] = useState(null);
 
   const { data: providersData } = useQuery({
     queryKey: ["shipping-providers"],
@@ -117,6 +130,26 @@ export default function OrderDetailModal({ open, onClose, order }) {
     },
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: async (status) => {
+      if (!orderId) {
+        throw new Error("Order not found");
+      }
+      return await ApiService.call(`/api/admin/orders/${orderId}/status`, "put", { status });
+    },
+    onSuccess: (data) => {
+      const updatedOrder = data?.order;
+      if (updatedOrder && onOrderUpdated) {
+        onOrderUpdated(updatedOrder);
+      }
+      alert(`Order status updated to ${updatedOrder?.status || "new status"}.`);
+      setStatusAnchorEl(null);
+    },
+    onError: (error) => {
+      alert(error?.response?.data?.msg || error?.message || "Failed to update status");
+    },
+  });
+
   if (!order) return null;
 
   const formattedDate = order.createdAt
@@ -124,6 +157,8 @@ export default function OrderDetailModal({ open, onClose, order }) {
     : "N/A";
   const openMessageMenu = (event) => setMessageAnchorEl(event.currentTarget);
   const closeMessageMenu = () => setMessageAnchorEl(null);
+  const openStatusMenu = (event) => setStatusAnchorEl(event.currentTarget);
+  const closeStatusMenu = () => setStatusAnchorEl(null);
 
   const handleSendMessage = (payload) => {
     closeMessageMenu();
@@ -397,9 +432,29 @@ export default function OrderDetailModal({ open, onClose, order }) {
           </Box>
         )}
 
-        <Button variant="outlined" color="primary">
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={openStatusMenu}
+          disabled={updateStatusMutation.isPending}
+        >
           Update Status
         </Button>
+        <Menu
+          anchorEl={statusAnchorEl}
+          open={Boolean(statusAnchorEl)}
+          onClose={closeStatusMenu}
+        >
+          {orderStatusOptions.map((statusOption) => (
+            <MenuItem
+              key={statusOption.value}
+              disabled={statusOption.value === order.status || updateStatusMutation.isPending}
+              onClick={() => updateStatusMutation.mutate(statusOption.value)}
+            >
+              <ListItemText>{statusOption.label}</ListItemText>
+            </MenuItem>
+          ))}
+        </Menu>
         <Button variant="contained" color="primary">
           Print Invoice
         </Button>

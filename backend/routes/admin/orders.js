@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const OrderModel = require("../../models/OrderModel");
 const MessageService = require("../../services/MessageService");
+const enums = require("../../enums");
 
 router.post("/", async (req, res) => {
   const { page = 1, pageSize = 10, status, orderID, search, sortBy, sortOrder = "desc", excludePending } = req.body;
@@ -191,6 +192,43 @@ router.post("/:id/send-payment-reminder", async (req, res) => {
   } catch (error) {
     console.error("Error sending payment reminder message:", error);
     return res.sendError("sendFailed", "Failed to send payment reminder message", 500);
+  }
+});
+
+router.put("/:id/status", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const allowedStatuses = Object.values(enums.ORDER_STATUS || {});
+
+  if (!status || !allowedStatuses.includes(status)) {
+    return res.sendError(
+      "invalidStatus",
+      `Status must be one of: ${allowedStatuses.join(", ")}`,
+      400,
+    );
+  }
+
+  try {
+    const order = await OrderModel.findById(id);
+    if (!order) {
+      return res.sendError("notFound", "Order not found", 404);
+    }
+
+    order.status = status;
+    order.info = {
+      ...(order.info || {}),
+      updatedAt: new Date().toISOString(),
+      ...(status === enums.ORDER_STATUS.FINALIZED
+        ? { finalizedAt: new Date().toISOString() }
+        : {}),
+      ...(status === enums.ORDER_STATUS.PAID ? { paidAt: new Date().toISOString() } : {}),
+    };
+    await order.save();
+
+    return res.sendSuccess({ order }, "Order status updated");
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return res.sendError("updateFailed", "Failed to update order status", 500);
   }
 });
 
