@@ -3,6 +3,29 @@ const MessageLogModel = require("../models/MessageLogModel");
 const SESEmailService = require("./SESEmailService");
 
 class EmailDeliveryService {
+  static getEnv(name, fallback = "") {
+    return process.env[name] || process.env[name.toLowerCase()] || fallback;
+  }
+
+  static isProxyEnabled() {
+    const explicit = this.getEnv("MESSAGE_PROXY_ENABLED", "");
+    if (explicit) {
+      return explicit === "1" || explicit.toLowerCase() === "true";
+    }
+    return this.getEnv("NODE_ENV", "development") !== "production";
+  }
+
+  static getEffectiveRecipient(originalTo) {
+    if (!this.isProxyEnabled()) {
+      return { to: originalTo, proxied: false };
+    }
+    const proxyEmail = this.getEnv("MESSAGE_PROXY_EMAIL", "").trim();
+    if (!proxyEmail) {
+      return { to: originalTo, proxied: false };
+    }
+    return { to: proxyEmail, proxied: true };
+  }
+
   static stripHtml(html = "") {
     if (!html) return "";
     return html
@@ -50,10 +73,11 @@ class EmailDeliveryService {
       const subject = log.subject || "Notification from Giftsh.in";
       const html = log.content || "";
       const text = this.stripHtml(html) || html || " ";
+      const recipient = this.getEffectiveRecipient(log.to);
 
       const providerResponse = await this.sendViaSES({
         from: this.getSender(),
-        to: log.to,
+        to: recipient.to,
         subject,
         html,
         text,
@@ -69,6 +93,9 @@ class EmailDeliveryService {
               ...(log.info || {}),
               provider: providerResponse.provider,
               providerId: providerResponse.id,
+              originalTo: log.to,
+              actualTo: recipient.to,
+              isProxied: recipient.proxied,
             },
           },
         },

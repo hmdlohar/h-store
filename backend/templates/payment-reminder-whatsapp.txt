@@ -1,0 +1,8 @@
+Payment reminder for order #${orderID}
+Amount: ${amount}
+
+Your order is waiting for payment confirmation.
+Pay now:
+${checkoutUrl}
+
+Need help? Reply to this message.

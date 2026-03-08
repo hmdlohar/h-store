@@ -1,0 +1,10 @@
+New paid order received
+
+Order: #${orderID}
+Amount: ${amount}
+Customer: ${customerName}
+Mobile: ${customerMobile}
+Email: ${customerEmail}
+
+Open order:
+${orderUrl}

@@ -24,6 +24,11 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import StoreIcon from "@mui/icons-material/Store";
+import CampaignIcon from "@mui/icons-material/Campaign";
+import EmailIcon from "@mui/icons-material/Email";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import PaymentIcon from "@mui/icons-material/Payment";
 import { format } from "date-fns";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
@@ -40,6 +45,7 @@ const statusColors = {
 export default function OrderDetailModal({ open, onClose, order }) {
   const orderId = order?._id;
   const [shippingAnchorEl, setShippingAnchorEl] = useState(null);
+  const [messageAnchorEl, setMessageAnchorEl] = useState(null);
 
   const { data: providersData } = useQuery({
     queryKey: ["shipping-providers"],
@@ -91,20 +97,20 @@ export default function OrderDetailModal({ open, onClose, order }) {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (channel) => {
+    mutationFn: async ({ kind, channel }) => {
       if (!orderId) {
         throw new Error("Order not found");
       }
-      return await ApiService.call(`/api/admin/orders/${orderId}/send-order-placed`, "post", {
+      const endpoint =
+        kind === "payment-reminder" ? "send-payment-reminder" : "send-order-placed";
+      return await ApiService.call(`/api/admin/orders/${orderId}/${endpoint}`, "post", {
         channel,
       });
     },
-    onSuccess: (_, channel) => {
-      alert(
-        channel === "email"
-          ? "Order placed email sent successfully."
-          : "Order placed WhatsApp sent successfully.",
-      );
+    onSuccess: (_, payload) => {
+      const kindLabel = payload.kind === "payment-reminder" ? "Payment reminder" : "Order placed";
+      const channelLabel = payload.channel === "email" ? "email" : "WhatsApp";
+      alert(`${kindLabel} ${channelLabel} sent successfully.`);
     },
     onError: (error) => {
       alert(error?.response?.data?.msg || error?.message || "Failed to send message");
@@ -116,6 +122,13 @@ export default function OrderDetailModal({ open, onClose, order }) {
   const formattedDate = order.createdAt
     ? format(new Date(order.createdAt), "MMM dd, yyyy • h:mm a")
     : "N/A";
+  const openMessageMenu = (event) => setMessageAnchorEl(event.currentTarget);
+  const closeMessageMenu = () => setMessageAnchorEl(null);
+
+  const handleSendMessage = (payload) => {
+    closeMessageMenu();
+    sendMessageMutation.mutate(payload);
+  };
 
   return (
     <Dialog
@@ -265,18 +278,54 @@ export default function OrderDetailModal({ open, onClose, order }) {
       <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", gap: 2, flexWrap: "wrap" }}>
         <Button
           variant="outlined"
-          onClick={() => sendMessageMutation.mutate("whatsapp")}
+          startIcon={<CampaignIcon />}
+          onClick={openMessageMenu}
           disabled={sendMessageMutation.isPending}
         >
-          Send Order Placed WhatsApp
+          Send Message
         </Button>
-        <Button
-          variant="outlined"
-          onClick={() => sendMessageMutation.mutate("email")}
-          disabled={sendMessageMutation.isPending}
+        <Menu
+          anchorEl={messageAnchorEl}
+          open={Boolean(messageAnchorEl)}
+          onClose={closeMessageMenu}
         >
-          Send Order Placed Email
-        </Button>
+          <MenuItem onClick={() => handleSendMessage({ kind: "order-placed", channel: "whatsapp" })}>
+            <ListItemIcon>
+              <WhatsAppIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemIcon>
+              <ShoppingBagIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Order Placed (WhatsApp)</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleSendMessage({ kind: "order-placed", channel: "email" })}>
+            <ListItemIcon>
+              <EmailIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemIcon>
+              <ShoppingBagIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Order Placed (Email)</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleSendMessage({ kind: "payment-reminder", channel: "whatsapp" })}>
+            <ListItemIcon>
+              <WhatsAppIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemIcon>
+              <PaymentIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Payment Reminder (WhatsApp)</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleSendMessage({ kind: "payment-reminder", channel: "email" })}>
+            <ListItemIcon>
+              <EmailIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemIcon>
+              <PaymentIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Payment Reminder (Email)</ListItemText>
+          </MenuItem>
+        </Menu>
         
         {/* Shipping Buttons */}
         {providers.length > 0 && (

@@ -17,6 +17,25 @@ class WhatsAppDeliveryService {
     };
   }
 
+  static isProxyEnabled() {
+    const explicit = this.getEnv("MESSAGE_PROXY_ENABLED", "");
+    if (explicit) {
+      return explicit === "1" || explicit.toLowerCase() === "true";
+    }
+    return this.getEnv("NODE_ENV", "development") !== "production";
+  }
+
+  static getEffectiveRecipient(originalTo) {
+    if (!this.isProxyEnabled()) {
+      return { to: originalTo, proxied: false };
+    }
+    const proxyWhatsApp = this.getEnv("MESSAGE_PROXY_WHATSAPP", "").trim();
+    if (!proxyWhatsApp) {
+      return { to: originalTo, proxied: false };
+    }
+    return { to: proxyWhatsApp, proxied: true };
+  }
+
   static normalizeChatId(to) {
     if (!to) {
       throw new Error("WhatsApp recipient is required");
@@ -120,8 +139,9 @@ class WhatsAppDeliveryService {
 
   static async processWhatsAppLog(log) {
     try {
+      const recipient = this.getEffectiveRecipient(log.to);
       const providerResponse = await this.sendViaWWebJS({
-        to: log.to,
+        to: recipient.to,
         content: log.content || "",
       });
 
@@ -136,6 +156,9 @@ class WhatsAppDeliveryService {
               provider: providerResponse.provider,
               chatId: providerResponse.chatId,
               providerResponse: providerResponse.providerResponse,
+              originalTo: log.to,
+              actualTo: recipient.to,
+              isProxied: recipient.proxied,
             },
           },
         },

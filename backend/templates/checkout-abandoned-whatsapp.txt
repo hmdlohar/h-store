@@ -1,0 +1,9 @@
+Hi! 👋
+
+You left your order #${orderID} incomplete.
+Amount: ${amount}
+
+Complete your order here:
+${checkoutUrl}
+
+If you need help, just reply to this message.

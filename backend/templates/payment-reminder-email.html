@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Reminder</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f5f7fb; font-family: Arial, sans-serif; color: #1f2937;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f7fb; padding: 24px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width: 600px; width: 100%; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
+            <tr>
+              <td style="padding: 24px;">
+                <h2 style="margin: 0 0 12px 0; font-size: 22px; color: #111827;">Payment reminder</h2>
+                <p style="margin: 0 0 12px 0; line-height: 1.6;">Order <strong>#${orderID}</strong> is waiting for payment.</p>
+                <p style="margin: 0 0 12px 0; line-height: 1.6;">Amount: <strong>${amount}</strong></p>
+                <p style="margin: 0 0 12px 0; line-height: 1.6;">Complete payment here:</p>
+                <p style="margin: 0 0 12px 0; line-height: 1.6;">
+                  <a href="${checkoutUrl}" style="color: #2563eb;">${checkoutUrl}</a>
+                </p>
+                <p style="margin: 0; line-height: 1.6;">If you already paid, please ignore this email.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -137,4 +137,61 @@ router.post("/:id/send-order-placed", async (req, res) => {
   }
 });
 
+router.post("/:id/send-payment-reminder", async (req, res) => {
+  const { id } = req.params;
+  const { channel } = req.body;
+
+  if (!["email", "whatsapp"].includes(channel)) {
+    return res.sendError("invalidChannel", "Channel must be email or whatsapp", 400);
+  }
+
+  try {
+    const order = await OrderModel.findById(id);
+    if (!order) {
+      return res.sendError("notFound", "Order not found", 404);
+    }
+
+    const orderID = order.orderNumber || order._id;
+    const amount = `₹${order.amount}`;
+    const frontendUrl = String(process.env.FRONTEND_URL || "").replace(/\/+$/, "");
+    const checkoutUrl = frontendUrl ? `${frontendUrl}/checkout/${order._id}` : "";
+
+    if (!checkoutUrl) {
+      return res.sendError("missingFrontendUrl", "FRONTEND_URL is not configured", 400);
+    }
+
+    if (channel === "email") {
+      const to = order.deliveryAddress?.email;
+      if (!to) {
+        return res.sendError("missingEmail", "Customer email is missing for this order", 400);
+      }
+
+      const messageLog = await MessageService.sendEmail({
+        to,
+        subject: `Payment reminder - #${orderID}`,
+        templateName: "payment-reminder-email",
+        variables: { orderID, amount, checkoutUrl },
+      });
+
+      return res.sendSuccess({ messageLog }, "Payment reminder email sent");
+    }
+
+    const to = order.deliveryAddress?.mobile;
+    if (!to) {
+      return res.sendError("missingMobile", "Customer mobile is missing for this order", 400);
+    }
+
+    const messageLog = await MessageService.sendWhatsApp({
+      to,
+      templateName: "payment-reminder-whatsapp",
+      variables: { orderID, amount, checkoutUrl },
+    });
+
+    return res.sendSuccess({ messageLog }, "Payment reminder WhatsApp sent");
+  } catch (error) {
+    console.error("Error sending payment reminder message:", error);
+    return res.sendError("sendFailed", "Failed to send payment reminder message", 500);
+  }
+});
+
 module.exports = router;

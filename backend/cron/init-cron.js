@@ -2,6 +2,7 @@ const cron = require("node-cron");
 const JobQueueService = require("../services/JobQueueService");
 const EmailDeliveryService = require("../services/EmailDeliveryService");
 const WhatsAppDeliveryService = require("../services/WhatsAppDeliveryService");
+const OrderCommunicationService = require("../services/OrderCommunicationService");
 const { fetchIpInfoForSessions } = require("./ipFetcher");
 
 const cronJobs = {
@@ -39,6 +40,22 @@ const cronJobs = {
       if (result.scanned > 0) {
         console.log(
           `WhatsApp cron: scanned=${result.scanned}, sent=${result.sent}, failed=${result.failed}`,
+        );
+      }
+      return result;
+    },
+    oneAtTime: true,
+  },
+  PROCESS_ORDER_REMINDERS: {
+    cron: "*/30 * * * * *", // every 30 seconds
+    handler: async () => {
+      const result = await OrderCommunicationService.processOrderReminders();
+      const abandonedQueued = result.abandoned?.queued || 0;
+      const paymentQueued = result.payment?.queued || 0;
+      const totalQueued = abandonedQueued + paymentQueued;
+      if (totalQueued > 0) {
+        console.log(
+          `Order reminder cron: abandonedQueued=${abandonedQueued}, paymentQueued=${paymentQueued}`,
         );
       }
       return result;

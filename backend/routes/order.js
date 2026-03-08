@@ -143,6 +143,10 @@ router.post("/finalize-order", async (req, res) => {
     if (!order) throw new Error("Order not found");
     
     order.set("status", enums.ORDER_STATUS.FINALIZED);
+    order.info = {
+      ...(order.info || {}),
+      finalizedAt: new Date().toISOString(),
+    };
     await order.save();
     
     res.sendSuccess(order, "Order finalized");
@@ -190,6 +194,10 @@ router.post("/verify-cashfree-order", async (req, res) => {
       throw new Error("Order not paid");
     }
     order.set("status", enums.ORDER_STATUS.PAID);
+    order.info = {
+      ...(order.info || {}),
+      paidAt: new Date().toISOString(),
+    };
     JobQueue.create({
       type: enums.JOB_TYPE.ORDER_PAID,
       context: {
