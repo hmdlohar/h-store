@@ -1,6 +1,7 @@
 const cron = require("node-cron");
 const JobQueueService = require("../services/JobQueueService");
 const EmailDeliveryService = require("../services/EmailDeliveryService");
+const WhatsAppDeliveryService = require("../services/WhatsAppDeliveryService");
 const { fetchIpInfoForSessions } = require("./ipFetcher");
 
 const cronJobs = {
@@ -25,6 +26,19 @@ const cronJobs = {
       if (result.scanned > 0) {
         console.log(
           `Email cron: scanned=${result.scanned}, sent=${result.sent}, failed=${result.failed}`,
+        );
+      }
+      return result;
+    },
+    oneAtTime: true,
+  },
+  PROCESS_PENDING_WHATSAPP_LOGS: {
+    cron: "*/5 * * * * *", // every 5 seconds
+    handler: async () => {
+      const result = await WhatsAppDeliveryService.processPendingWhatsAppLogs(5);
+      if (result.scanned > 0) {
+        console.log(
+          `WhatsApp cron: scanned=${result.scanned}, sent=${result.sent}, failed=${result.failed}`,
         );
       }
       return result;
