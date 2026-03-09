@@ -61,7 +61,7 @@ export default function OrderPage() {
 
   // If order is finalized, go to final step
   useEffect(() => {
-    if (order?.status === "finalized") {
+    if (["finalized", "paid", "confirmed"].includes(order?.status)) {
       const finalStep = hasVariants ? 4 : 3;
       setStep(finalStep);
     }
@@ -87,11 +87,11 @@ export default function OrderPage() {
               if (hasVariants) {
                 switch (step) {
                   case 1:
-                    return <GetAddress />;
-                  case 2:
                     return <SelectVariant />;
-                  case 3:
+                  case 2:
                     return <AddCustomization />;
+                  case 3:
+                    return <GetAddress />;
                   case 4:
                     return <OrderReviewAndPay />;
                   default:
@@ -100,9 +100,9 @@ export default function OrderPage() {
               } else {
                 switch (step) {
                   case 1:
-                    return <GetAddress />;
-                  case 2:
                     return <AddCustomization />;
+                  case 2:
+                    return <GetAddress />;
                   case 3:
                     return <OrderReviewAndPay />;
                   default:

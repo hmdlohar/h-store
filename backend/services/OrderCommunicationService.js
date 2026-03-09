@@ -131,6 +131,8 @@ class OrderCommunicationService {
 
     const orders = await OrderModel.find({
       status: enums.ORDER_STATUS.FINALIZED,
+      paymentMethod: enums.PAYMENT_METHOD.ONLINE,
+      paymentStatus: enums.PAYMENT_STATUS.PENDING,
       createdAt: { $lte: firstThreshold },
     })
       .sort({ createdAt: 1 })

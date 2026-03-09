@@ -1,7 +1,12 @@
 const { parseErrorString } = require("hyper-utils");
 const enums = require("../enums");
 const JobQueue = require("../models/JobQueue");
-const { processOrderNotification, processOrderPaid } = require("../util/orderUtils");
+const {
+  processOrderNotification,
+  processOrderPaid,
+  processCodOrderPlaced,
+  processCodOrderConfirmed,
+} = require("../util/orderUtils");
 class JobQueueService {
   static async createJob({ type, context }) {
     const job = new JobQueue({ type, context });
@@ -14,7 +19,7 @@ class JobQueueService {
     console.log(`Processing ${jobs.length} pending jobs`);
     let success = 0;
     for (const job of jobs) {
-      const [error, isSuccess] = await this.processJob(job);
+      const [, isSuccess] = await this.processJob(job);
       if (isSuccess) {
         success++;
       }
@@ -35,6 +40,12 @@ class JobQueueService {
           break;
         case enums.JOB_TYPE.ORDER_PAID:
           await processOrderPaid(context.orderId);
+          break;
+        case enums.JOB_TYPE.COD_ORDER_PLACED:
+          await processCodOrderPlaced(context.orderId);
+          break;
+        case enums.JOB_TYPE.COD_ORDER_CONFIRMED:
+          await processCodOrderConfirmed(context.orderId);
           break;
         default:
           throw new Error(`Unknown job type: ${type}`);

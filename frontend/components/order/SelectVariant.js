@@ -26,7 +26,7 @@ export default function SelectVariant() {
     },
     onSuccess: (response) => {
       setOrder(response);
-      setStep(3);
+      setStep(2);
     },
   });
 
@@ -62,6 +62,7 @@ export default function SelectVariant() {
       continueDisabled={!canContinue}
       continueLoading={actionUpdateVariant.isPending}
       continueText="Continue"
+      showBack={step > 1}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {variants.map(([key, variant]) => {

@@ -1,54 +1,55 @@
 import React from "react";
-import { Box, Typography, Button, Paper } from "@mui/material";
-import { useOrderStore } from "@/store/orderStore";
+import { Box, Typography, Button } from "@mui/material";
 
-export default function OrderStepWrapper({ 
-  title, 
-  children, 
-  onBack, 
-  onContinue, 
+export default function OrderStepWrapper({
+  title,
+  children,
+  onBack,
+  onContinue,
   continueDisabled = false,
   continueLoading = false,
   showBack = true,
   backText = "Back",
   continueText = "Continue",
-  showContinue = true
+  showContinue = true,
 }) {
-  const { step, hasVariants } = useOrderStore();
-  
   return (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        minHeight: 'calc(100vh - 200px)',
-        pb: '80px'
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "calc(100vh - 200px)",
       }}
     >
-      <Box mb={3}>
-        <Typography variant="h6" fontWeight={600} textAlign="center" mb={1}>
+      {/* Fake Box */}
+      <Box sx={{ height: 10 }} />
+      <Box mb={1}>
+        <Typography variant="h6" fontWeight={600} textAlign="center">
           {title}
         </Typography>
       </Box>
-      
-      <Box flex={1}>
-        {children}
-      </Box>
-      
+
+      <Box flex={1}>{children}</Box>
+
       <Box
         sx={{
-          position: 'fixed',
+          position: "fixed",
           bottom: 0,
           left: 0,
           right: 0,
-          bgcolor: 'background.paper',
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          p: 2,
-          display: 'flex',
-          gap: 2,
-          boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+          bgcolor: "background.paper",
+          borderTop: "1px solid",
+          borderColor: "divider",
+          p: { xs: 1, sm: 1.25 },
+          display: "flex",
+          gap: 1,
+          flexWrap: "nowrap",
+          boxShadow: "0 -2px 10px rgba(0,0,0,0.1)",
           zIndex: 1000,
+          pb: {
+            xs: "calc(6px + env(safe-area-inset-bottom, 0px))",
+            sm: "calc(6px + env(safe-area-inset-bottom, 0px))",
+          },
         }}
       >
         {showBack && (
@@ -57,8 +58,8 @@ export default function OrderStepWrapper({
             onClick={onBack}
             disabled={continueLoading}
             sx={{
-              py: 1.5,
-              px: 3,
+              py: 1.1,
+              px: 2,
               borderRadius: "100px",
               fontWeight: 600,
               flex: 1,
@@ -73,11 +74,11 @@ export default function OrderStepWrapper({
             onClick={onContinue}
             disabled={continueDisabled || continueLoading}
             sx={{
-              py: 1.5,
-              px: 4,
+              py: 1.1,
+              px: 2,
               borderRadius: "100px",
               fontWeight: 700,
-              flex: 2,
+              flex: 1.4,
               bgcolor: "#FFD814",
               color: "#0F1111",
               border: "1px solid #FCD200",
@@ -89,13 +90,15 @@ export default function OrderStepWrapper({
               "&:disabled": {
                 bgcolor: "#FFD814",
                 opacity: 0.6,
-              }
+              },
             }}
           >
             {continueLoading ? "Loading..." : continueText}
           </Button>
         )}
       </Box>
+      {/* Fake Box Bottom */}
+      <Box sx={{ height: 60 }} />
     </Box>
   );
 }

@@ -64,6 +64,11 @@ router.post("/", async (req, res) => {
             _id: "$_id",
             userID: { $first: "$userID" },
             status: { $first: "$status" },
+            paymentMethod: { $first: "$paymentMethod" },
+            paymentStatus: { $first: "$paymentStatus" },
+            subTotal: { $first: "$subTotal" },
+            tax: { $first: "$tax" },
+            deliveryCharge: { $first: "$deliveryCharge" },
             amount: { $first: "$amount" },
             deliveryAddress: { $first: "$deliveryAddress" },
             pg: { $first: "$pg" },
@@ -99,6 +104,9 @@ router.post("/:id/send-order-placed", async (req, res) => {
     const order = await OrderModel.findById(id);
     if (!order) {
       return res.sendError("notFound", "Order not found", 404);
+    }
+    if (order.paymentMethod !== enums.PAYMENT_METHOD.ONLINE) {
+      return res.sendError("invalidPaymentMethod", "Payment reminder is only valid for online orders", 400);
     }
 
     const orderID = order.orderNumber || order._id;
@@ -213,8 +221,18 @@ router.put("/:id/status", async (req, res) => {
     if (!order) {
       return res.sendError("notFound", "Order not found", 404);
     }
+    if (status === enums.ORDER_STATUS.CONFIRMED && order.paymentMethod !== enums.PAYMENT_METHOD.COD) {
+      return res.sendError("invalidStatus", "Confirmed status is only valid for COD orders", 400);
+    }
 
     order.status = status;
+    if (status === enums.ORDER_STATUS.PAID) {
+      order.paymentMethod = enums.PAYMENT_METHOD.ONLINE;
+      order.paymentStatus = enums.PAYMENT_STATUS.PAID;
+    }
+    if (status === enums.ORDER_STATUS.CONFIRMED) {
+      order.paymentStatus = enums.PAYMENT_STATUS.COD_PENDING;
+    }
     order.info = {
       ...(order.info || {}),
       updatedAt: new Date().toISOString(),
@@ -222,8 +240,25 @@ router.put("/:id/status", async (req, res) => {
         ? { finalizedAt: new Date().toISOString() }
         : {}),
       ...(status === enums.ORDER_STATUS.PAID ? { paidAt: new Date().toISOString() } : {}),
+      ...(status === enums.ORDER_STATUS.CONFIRMED ? { codConfirmedAt: new Date().toISOString() } : {}),
     };
     await order.save();
+
+    if (
+      status === enums.ORDER_STATUS.CONFIRMED &&
+      order.paymentMethod === enums.PAYMENT_METHOD.COD &&
+      !order.info?.codConfirmationNotificationQueuedAt
+    ) {
+      order.info = {
+        ...(order.info || {}),
+        codConfirmationNotificationQueuedAt: new Date().toISOString(),
+      };
+      await order.save();
+      await require("../../models/JobQueue").create({
+        type: enums.JOB_TYPE.COD_ORDER_CONFIRMED,
+        context: { orderId: id },
+      });
+    }
 
     return res.sendSuccess({ order }, "Order status updated");
   } catch (error) {

@@ -25,7 +25,7 @@ export default function AddCustomization() {
         values
       );
       setOrder(response);
-      setStep(hasVariants ? 4 : 3);
+      setStep(hasVariants ? 3 : 2);
       return response;
     },
   });
@@ -91,7 +91,7 @@ export default function AddCustomization() {
       title="Customize Your Order"
       onBack={handleBack}
       onContinue={handleContinue}
-      showBack={true}
+      showBack={step > 1}
       backText="Back"
       continueText="Continue"
       continueLoading={isSubmitting}

@@ -131,7 +131,7 @@ export default function PaymentReturn() {
                 </Button>
                 <Button
                   variant="contained"
-                  onClick={() => router.push(`/order/${router.query.order_id}`)}
+                  onClick={() => router.push(`/checkout/${router.query.order_id}`)}
                 >
                   View Order
                 </Button>

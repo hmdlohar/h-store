@@ -1,0 +1,4 @@
+Your COD order #${orderID} is confirmed.
+Amount payable on delivery: ${amount}
+
+We are now processing your order.

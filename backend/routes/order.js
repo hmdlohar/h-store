@@ -3,7 +3,7 @@ const JobQueue = require("../models/JobQueue");
 
 const router = express.Router();
 const OrderModel = require("../models/OrderModel");
-const { setSubTotal } = require("../util/orderUtils");
+const { setSubTotal, getIncludedGst } = require("../util/orderUtils");
 const ProductModel = require("../models/ProductModel");
 const ImageKitService = require("../services/ImageKitService");
 const multer = require("multer");
@@ -16,6 +16,8 @@ router.post("/", async (req, res) => {
   try {
     let order = new OrderModel(setSubTotal(req.body));
     order.userID = req.user?._id || null;
+    order.paymentMethod = enums.PAYMENT_METHOD.ONLINE;
+    order.paymentStatus = enums.PAYMENT_STATUS.PENDING;
     await order.save();
     
     
@@ -137,12 +139,22 @@ router.post("/upload-image", upload.single("file"), async (req, res) => {
 // Finalize order - called when user reaches payment step
 router.post("/finalize-order", async (req, res) => {
   try {
-    const { orderId } = req.body;
+    const { orderId, paymentMethod = enums.PAYMENT_METHOD.ONLINE } = req.body;
     if (!orderId) throw new Error("orderId is required");
     const order = await OrderModel.findById(orderId);
     if (!order) throw new Error("Order not found");
+    if (![enums.PAYMENT_METHOD.ONLINE, enums.PAYMENT_METHOD.COD].includes(paymentMethod)) {
+      throw new Error("Invalid payment method");
+    }
     
     order.set("status", enums.ORDER_STATUS.FINALIZED);
+    order.set("paymentMethod", paymentMethod);
+    order.set("paymentStatus", enums.PAYMENT_STATUS.PENDING);
+    order.set("pg", paymentMethod === enums.PAYMENT_METHOD.COD ? "cod" : "cashfree");
+    if (paymentMethod === enums.PAYMENT_METHOD.COD) {
+      order.set("pgOrderID", "");
+    }
+    setSubTotal(order);
     order.info = {
       ...(order.info || {}),
       finalizedAt: new Date().toISOString(),
@@ -163,7 +175,9 @@ router.post("/create-cashfree-order", async (req, res) => {
     const order = await OrderModel.findById(orderId);
     if (!order) throw new Error("Order not found");
     // Calculate total amount (use your logic if needed)
-    order.amount = order.finalAmount || order.amount || order.total || 1;
+    order.paymentMethod = enums.PAYMENT_METHOD.ONLINE;
+    order.paymentStatus = enums.PAYMENT_STATUS.PENDING;
+    setSubTotal(order);
     const result =
       await require("../services/CashfreeUtils").createCashfreeOrder(order);
 
@@ -194,6 +208,8 @@ router.post("/verify-cashfree-order", async (req, res) => {
       throw new Error("Order not paid");
     }
     order.set("status", enums.ORDER_STATUS.PAID);
+    order.set("paymentMethod", enums.PAYMENT_METHOD.ONLINE);
+    order.set("paymentStatus", enums.PAYMENT_STATUS.PAID);
     order.info = {
       ...(order.info || {}),
       paidAt: new Date().toISOString(),
@@ -239,6 +255,46 @@ router.post("/verify-cashfree-order", async (req, res) => {
   }
 });
 
+router.post("/place-cod-order", async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) throw new Error("orderId is required");
+    const order = await OrderModel.findById(orderId);
+    if (!order) throw new Error("Order not found");
+    if (!order.deliveryAddress?.mobile && !order.deliveryAddress?.email) {
+      throw new Error("Customer contact details are required for COD");
+    }
+
+    if (order.info?.codPlacedAt && order.paymentMethod === enums.PAYMENT_METHOD.COD) {
+      return res.sendSuccess(order, "COD order already placed");
+    }
+
+    order.set("status", enums.ORDER_STATUS.FINALIZED);
+    order.set("paymentMethod", enums.PAYMENT_METHOD.COD);
+    order.set("paymentStatus", enums.PAYMENT_STATUS.COD_PENDING);
+    order.set("pg", "cod");
+    order.set("pgOrderID", "");
+    setSubTotal(order);
+    order.info = {
+      ...(order.info || {}),
+      finalizedAt: order.info?.finalizedAt || new Date().toISOString(),
+      codPlacedAt: new Date().toISOString(),
+    };
+    await order.save();
+
+    await JobQueue.create({
+      type: enums.JOB_TYPE.COD_ORDER_PLACED,
+      context: {
+        orderId,
+      },
+    });
+
+    return res.sendSuccess(order, "COD order placed successfully");
+  } catch (ex) {
+    res.sendError(ex, parseErrorString(ex));
+  }
+});
+
 router.get("/:orderID", async (req, res) => {
   try {
     const orders = await OrderModel.aggregate([
@@ -270,6 +326,11 @@ router.get("/:orderID", async (req, res) => {
           _id: "$_id",
           userID: { $first: "$userID" },
           status: { $first: "$status" },
+          subTotal: { $first: "$subTotal" },
+          tax: { $first: "$tax" },
+          paymentMethod: { $first: "$paymentMethod" },
+          paymentStatus: { $first: "$paymentStatus" },
+          deliveryCharge: { $first: "$deliveryCharge" },
           amount: { $first: "$amount" },
           deliveryAddress: { $first: "$deliveryAddress" },
           pg: { $first: "$pg" },
@@ -283,6 +344,9 @@ router.get("/:orderID", async (req, res) => {
     ]);
     if (orders.length === 0) {
       return res.sendError("orderNotFound", "Order not found");
+    }
+    if (!orders[0].tax && orders[0].subTotal) {
+      orders[0].tax = getIncludedGst(orders[0].subTotal);
     }
     res.sendSuccess(orders[0]);
   } catch (ex) {

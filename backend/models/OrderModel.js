@@ -65,6 +65,10 @@ var ProductSchema = new mongoose.Schema({
   tax: {
     type: Object,
   },
+  deliveryCharge: {
+    type: Number,
+    default: 0,
+  },
   amount: {
     type: Number,
     required: true,
@@ -79,6 +83,14 @@ var ProductSchema = new mongoose.Schema({
   },
   userID: {
     type: String,
+  },
+  paymentMethod: {
+    type: String,
+    default: "online",
+  },
+  paymentStatus: {
+    type: String,
+    default: "pending",
   },
   pg: {
     type: String,

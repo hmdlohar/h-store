@@ -34,10 +34,17 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
 import { useState } from "react";
 
+function getIncludedGst(amount) {
+  const numericAmount = Number(amount || 0);
+  if (!numericAmount) return 0;
+  return Number((numericAmount - numericAmount / 1.18).toFixed(2));
+}
+
 const statusColors = {
   paid: "success",
   pending: "warning",
   finalized: "warning",
+  confirmed: "success",
   cancelled: "error",
   shipped: "primary",
   delivered: "info",
@@ -47,6 +54,7 @@ const statusColors = {
 const orderStatusOptions = [
   { value: "pending", label: "Pending" },
   { value: "finalized", label: "Finalized" },
+  { value: "confirmed", label: "Confirmed" },
   { value: "paid", label: "Paid" },
   { value: "processing", label: "Processing" },
   { value: "shipped", label: "Shipped" },
@@ -159,6 +167,8 @@ export default function OrderDetailModal({ open, onClose, order, onOrderUpdated 
   const closeMessageMenu = () => setMessageAnchorEl(null);
   const openStatusMenu = (event) => setStatusAnchorEl(event.currentTarget);
   const closeStatusMenu = () => setStatusAnchorEl(null);
+  const isCodOrder = order?.paymentMethod === "cod";
+  const gstAmount = Number(order?.tax || 0) || getIncludedGst(order?.subTotal || order?.amount || 0);
 
   const handleSendMessage = (payload) => {
     closeMessageMenu();
@@ -276,7 +286,7 @@ export default function OrderDetailModal({ open, onClose, order, onOrderUpdated 
                   <Typography variant="body2" color="text.secondary">
                     Payment Method
                   </Typography>
-                  <Typography variant="body2">{order.pg}</Typography>
+                  <Typography variant="body2">{order.paymentMethod || order.pg || "N/A"}</Typography>
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="text.secondary">
@@ -288,6 +298,26 @@ export default function OrderDetailModal({ open, onClose, order, onOrderUpdated 
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="text.secondary">
+                    Subtotal
+                  </Typography>
+                  <Typography variant="body2">₹{order.subTotal || 0}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Included GST (18%)
+                  </Typography>
+                  <Typography variant="body2">₹{gstAmount}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Delivery
+                  </Typography>
+                  <Typography variant="body2">
+                    {Number(order.deliveryCharge || 0) === 0 ? "FREE" : `₹${order.deliveryCharge}`}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
                     Status
                   </Typography>
                   <Chip
@@ -295,6 +325,12 @@ export default function OrderDetailModal({ open, onClose, order, onOrderUpdated 
                     size="small"
                     color={statusColors[order.status] || "default"}
                   />
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Payment Status
+                  </Typography>
+                  <Typography variant="body2">{order.paymentStatus || "N/A"}</Typography>
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="body2" color="text.secondary">
@@ -405,6 +441,17 @@ export default function OrderDetailModal({ open, onClose, order, onOrderUpdated 
           </>
         )}
 
+        {isCodOrder && order.status === "finalized" && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => updateStatusMutation.mutate("confirmed")}
+            disabled={updateStatusMutation.isPending}
+          >
+            Confirm COD
+          </Button>
+        )}
+
         {/* Hmdapp Button */}
         <Button
           variant="contained"
@@ -448,6 +495,10 @@ export default function OrderDetailModal({ open, onClose, order, onOrderUpdated 
           {orderStatusOptions.map((statusOption) => (
             <MenuItem
               key={statusOption.value}
+              sx={{
+                display:
+                  statusOption.value === "confirmed" && !isCodOrder ? "none" : undefined,
+              }}
               disabled={statusOption.value === order.status || updateStatusMutation.isPending}
               onClick={() => updateStatusMutation.mutate(statusOption.value)}
             >

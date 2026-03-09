@@ -9,6 +9,12 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useCommonStore } from "@/store/commonStore";
 import { fbPixel } from "@/services/FacebookPixelService";
 
+function getIncludedGst(amount) {
+  const numericAmount = Number(amount || 0);
+  if (!numericAmount) return 0;
+  return Number((numericAmount - numericAmount / 1.18).toFixed(2));
+}
+
 export default function OrderSuccessPage({ orderId }) {
   const order = useQuery({
     queryKey: ["order", orderId],
@@ -32,6 +38,9 @@ export default function OrderSuccessPage({ orderId }) {
   useEffect(() => {
     if (order.data && !order.isLoading) {
       const orderData = order.data;
+      if (orderData.paymentStatus !== "paid") {
+        return;
+      }
       const items = orderData.items || [];
       
       fbPixel.purchase({
@@ -51,6 +60,10 @@ export default function OrderSuccessPage({ orderId }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const gstAmount =
+    Number(order?.data?.tax || 0) ||
+    getIncludedGst(order?.data?.subTotal || order?.data?.amount || 0);
 
   return (
     <div>
@@ -80,7 +93,9 @@ export default function OrderSuccessPage({ orderId }) {
             />
 
             <Typography variant="h5" gutterBottom fontWeight={600}>
-              Thank You! Your Order is Placed
+              {order?.data?.paymentMethod === "cod"
+                ? "Thank You! Your COD Order is Received"
+                : "Thank You! Your Order is Placed"}
             </Typography>
 
             <Typography
@@ -89,7 +104,9 @@ export default function OrderSuccessPage({ orderId }) {
               paragraph
               sx={{ mb: 3 }}
             >
-              We&apos;ll call you shortly to confirm your order details.
+              {order?.data?.paymentMethod === "cod"
+                ? "We will call you shortly to confirm this COD order."
+                : "Your payment was received successfully and we will process your order shortly."}
             </Typography>
 
             <Box
@@ -126,8 +143,19 @@ export default function OrderSuccessPage({ orderId }) {
             </Typography>
 
             <Typography variant="body2" color="text.secondary" paragraph>
-              Order Amount:{" "}
+              Order Total:{" "}
               <strong>₹{order?.data?.amount?.toLocaleString("en-IN")}</strong>
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Included GST (18%): <strong>₹{gstAmount.toLocaleString("en-IN")}</strong>
+              {" | "}
+              Delivery:{" "}
+              <strong>
+                {Number(order?.data?.deliveryCharge || 0) === 0
+                  ? "FREE"
+                  : `₹${Number(order?.data?.deliveryCharge || 0).toLocaleString("en-IN")}`}
+              </strong>
             </Typography>
 
             {user && (

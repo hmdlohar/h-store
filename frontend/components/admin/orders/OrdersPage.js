@@ -9,7 +9,10 @@ import { format } from "date-fns";
 const statusColors = {
   paid: "success",
   pending: "warning",
+  finalized: "warning",
+  confirmed: "success",
   cancelled: "error",
+  shipped: "primary",
   delivered: "info",
   processing: "secondary",
 };
@@ -17,8 +20,11 @@ const statusColors = {
 const statusOptions = [
   { value: "", label: "All" },
   { value: "pending", label: "Pending" },
+  { value: "finalized", label: "Finalized" },
+  { value: "confirmed", label: "Confirmed" },
   { value: "paid", label: "Paid" },
   { value: "processing", label: "Processing" },
+  { value: "shipped", label: "Shipped" },
   { value: "delivered", label: "Delivered" },
   { value: "cancelled", label: "Cancelled" },
 ];
@@ -121,9 +127,14 @@ export default function OrdersPage() {
       ),
     },
     {
-      accessorKey: "pg",
+      accessorKey: "paymentMethod",
       header: "Payment",
-      size: 100,
+      size: 130,
+      cell: ({ row }) => {
+        const method = row.original.paymentMethod || row.original.pg || "N/A";
+        const paymentStatus = row.original.paymentStatus || "";
+        return paymentStatus ? `${method} / ${paymentStatus}` : method;
+      },
     },
   ];
 

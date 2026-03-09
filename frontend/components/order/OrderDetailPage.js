@@ -12,6 +12,12 @@ import {
 import EcomImage from "@/common/EcomImage";
 import { prettyPrice } from "hyper-utils";
 
+function getIncludedGst(amount) {
+  const numericAmount = Number(amount || 0);
+  if (!numericAmount) return 0;
+  return Number((numericAmount - numericAmount / 1.18).toFixed(2));
+}
+
 export default function OrderDetailPage({ orderId }) {
   const {
     data: orderData,
@@ -40,6 +46,7 @@ export default function OrderDetailPage({ orderId }) {
 
   // Get the first item (most orders will have just one item)
   const item = orderData.items?.[0] || {};
+  const gstAmount = Number(orderData.tax || 0) || getIncludedGst(orderData.subTotal || orderData.amount || 0);
 
   // Get customization definitions from product if available
   const customizationsDef = orderData.product?.customizations || [];
@@ -70,12 +77,27 @@ export default function OrderDetailPage({ orderId }) {
         <Typography variant="h6">Order Details</Typography>
         <Chip
           label={orderData.status?.toUpperCase() || "PENDING"}
-          color={orderData.status === "paid" ? "success" : "warning"}
+          color={
+            orderData.status === "paid" || orderData.status === "confirmed"
+              ? "success"
+              : orderData.status === "cancelled"
+              ? "error"
+              : "warning"
+          }
         />
       </Box>
 
       <Typography variant="body2" color="text.secondary" mb={2}>
         Order #{orderData.orderNumber || "N/A"}
+      </Typography>
+
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        Payment: {orderData.paymentMethod || orderData.pg || "N/A"} / {orderData.paymentStatus || "N/A"}
+      </Typography>
+
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        Subtotal: {prettyPrice(orderData.subTotal || 0)} | Included GST (18%): {prettyPrice(gstAmount)} | Delivery:{" "}
+        {Number(orderData.deliveryCharge || 0) === 0 ? "FREE" : prettyPrice(orderData.deliveryCharge || 0)}
       </Typography>
 
       <Divider sx={{ my: 2 }} />

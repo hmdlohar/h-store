@@ -170,7 +170,14 @@ function StatusChip({ status }) {
       {status === "pending" && (
         <Chip label="Pending" color="warning" size="small" />
       )}
+      {status === "finalized" && (
+        <Chip label="Finalized" color="warning" size="small" />
+      )}
+      {status === "confirmed" && (
+        <Chip label="Confirmed" color="success" size="small" />
+      )}
       {status === "paid" && <Chip label="Paid" color="success" size="small" />}
+      {status === "shipped" && <Chip label="Shipped" color="primary" size="small" />}
       {status === "cancelled" && (
         <Chip label="Cancelled" color="error" size="small" />
       )}

@@ -76,7 +76,7 @@ export default function GetAddress() {
         values
       );
       setOrder(response);
-      setStep(hasVariants ? 2 : 2);
+      setStep(hasVariants ? 4 : 3);
       return response;
     },
   });

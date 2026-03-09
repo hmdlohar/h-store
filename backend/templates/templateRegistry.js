@@ -31,4 +31,28 @@ module.exports = {
     file: "order-paid-admin-whatsapp.txt",
     variables: ["orderID", "amount", "customerName", "customerMobile", "customerEmail", "orderUrl"],
   },
+  "cod-order-placed-email": {
+    file: "cod-order-placed-email.html",
+    variables: ["orderID", "amount"],
+  },
+  "cod-order-placed-whatsapp": {
+    file: "cod-order-placed-whatsapp.txt",
+    variables: ["orderID", "amount"],
+  },
+  "cod-order-confirmed-email": {
+    file: "cod-order-confirmed-email.html",
+    variables: ["orderID", "amount"],
+  },
+  "cod-order-confirmed-whatsapp": {
+    file: "cod-order-confirmed-whatsapp.txt",
+    variables: ["orderID", "amount"],
+  },
+  "cod-order-admin-email": {
+    file: "cod-order-admin-email.html",
+    variables: ["orderID", "amount", "customerName", "customerMobile", "customerEmail", "orderUrl"],
+  },
+  "cod-order-admin-whatsapp": {
+    file: "cod-order-admin-whatsapp.txt",
+    variables: ["orderID", "amount", "customerName", "customerMobile", "customerEmail", "orderUrl"],
+  },
 };

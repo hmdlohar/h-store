@@ -1,0 +1,10 @@
+New COD order needs confirmation
+
+Order: #${orderID}
+Amount: ${amount}
+Customer: ${customerName}
+Mobile: ${customerMobile}
+Email: ${customerEmail}
+
+Open order:
+${orderUrl}
