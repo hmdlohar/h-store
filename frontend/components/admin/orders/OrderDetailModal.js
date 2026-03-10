@@ -33,6 +33,7 @@ import { format } from "date-fns";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ApiService } from "@/services/ApiService";
 import { useState } from "react";
+import EcomImage from "@/common/EcomImage";
 
 function getIncludedGst(amount) {
   const numericAmount = Number(amount || 0);
@@ -62,11 +63,125 @@ const orderStatusOptions = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
+function isImageCustomizationValue(value) {
+  if (typeof value !== "string") return false;
+  return (
+    value.startsWith("http") ||
+    value.startsWith("uploads/") ||
+    value.startsWith("/") ||
+    /\.(png|jpe?g|gif|webp|svg)$/i.test(value)
+  );
+}
+
+function isColorCustomizationValue(value) {
+  if (typeof value !== "string") return false;
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value);
+}
+
+function getCustomizationMeta(item, field) {
+  const definitions =
+    item?.product?.customizations || item?.customizations || [];
+  return definitions.find((definition) => definition.field === field) || null;
+}
+
+function renderCustomizationValue(
+  item,
+  field,
+  value,
+  compact = false,
+  onImageClick = null
+) {
+  const meta = getCustomizationMeta(item, field);
+  const label = meta?.label || field;
+
+  if (meta?.fieldType === "image" || (!meta?.fieldType && isImageCustomizationValue(value))) {
+    return (
+      <Box
+        key={field}
+        sx={{
+          display: "flex",
+          alignItems: compact ? "center" : "flex-start",
+          gap: 1,
+          flexWrap: "wrap",
+        }}
+      >
+        <Typography variant={compact ? "caption" : "body2"} fontWeight={500}>
+          {label}:
+        </Typography>
+        <Box
+          onClick={() => onImageClick?.({ path: value, label })}
+          sx={{
+            cursor: onImageClick ? "pointer" : "default",
+            display: "inline-flex",
+          }}
+        >
+          <EcomImage
+            path={value}
+            alt={label}
+            small
+            style={{
+              width: compact ? 36 : 72,
+              height: compact ? 36 : 72,
+              objectFit: "cover",
+              borderRadius: 6,
+              border: "1px solid rgba(0, 0, 0, 0.08)",
+            }}
+          />
+        </Box>
+      </Box>
+    );
+  }
+
+  if (meta?.fieldType === "color" || (!meta?.fieldType && isColorCustomizationValue(value))) {
+    const colorName =
+      meta?.options?.find((option) => option.code === value)?.name || value;
+
+    return (
+      <Box
+        key={field}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          flexWrap: "wrap",
+        }}
+      >
+        <Typography variant={compact ? "caption" : "body2"} fontWeight={500}>
+          {label}:
+        </Typography>
+        <Box
+          sx={{
+            width: compact ? 14 : 18,
+            height: compact ? 14 : 18,
+            borderRadius: "50%",
+            bgcolor: value,
+            border: value === "#FFFFFF" ? "1px solid #d0d0d0" : "none",
+            flexShrink: 0,
+          }}
+        />
+        <Typography variant={compact ? "caption" : "body2"}>
+          {colorName}
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Typography key={field} variant={compact ? "caption" : "body2"}>
+      <Box component="span" fontWeight={500}>
+        {label}:
+      </Box>{" "}
+      {String(value)}
+    </Typography>
+  );
+}
+
 export default function OrderDetailModal({ open, onClose, order, onOrderUpdated }) {
   const orderId = order?._id;
   const [shippingAnchorEl, setShippingAnchorEl] = useState(null);
   const [messageAnchorEl, setMessageAnchorEl] = useState(null);
   const [statusAnchorEl, setStatusAnchorEl] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const { data: providersData } = useQuery({
     queryKey: ["shipping-providers"],
@@ -234,11 +349,17 @@ export default function OrderDetailModal({ open, onClose, order, onOrderUpdated 
                             </Typography>
                             {item.customization &&
                               Object.keys(item.customization).length > 0 && (
-                                <Typography variant="caption" color="text.secondary">
-                                  {Object.entries(item.customization)
-                                    .map(([k, v]) => `${k}: ${v}`)
-                                    .join(", ")}
-                                </Typography>
+                                <Box sx={{ mt: 0.5, display: "grid", gap: 0.5 }}>
+                                  {Object.entries(item.customization).map(([field, value]) =>
+                                    renderCustomizationValue(
+                                      item,
+                                      field,
+                                      value,
+                                      true,
+                                      setPreviewImage
+                                    )
+                                  )}
+                                </Box>
                               )}
                           </Box>
                         </Box>
@@ -345,6 +466,38 @@ export default function OrderDetailModal({ open, onClose, order, onOrderUpdated 
           </Grid>
         </Grid>
       </DialogContent>
+
+      <Dialog
+        open={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+        >
+          <Typography variant="h6">
+            {previewImage?.label || "Customization Image"}
+          </Typography>
+          <IconButton onClick={() => setPreviewImage(null)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {previewImage?.path && (
+            <EcomImage
+              path={previewImage.path}
+              alt={previewImage.label || "Customization Image"}
+              style={{
+                width: "100%",
+                maxHeight: "75vh",
+                objectFit: "contain",
+                borderRadius: 8,
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", gap: 2, flexWrap: "wrap" }}>
         <Button
