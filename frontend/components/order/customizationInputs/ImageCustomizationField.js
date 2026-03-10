@@ -158,27 +158,6 @@ export default function ImageCustomizationField({
       <Typography gutterBottom>{label}</Typography>
 
       <LoadingErrorRQ q={action} />
-      {formik.values[field] && (
-        <EcomImage
-          path={formik.values[field]}
-          alt={label}
-          style={{ maxWidth: "100%", maxHeight: "100%" }}
-        />
-      )}
-      <Button
-        fullWidth
-        variant="outlined"
-        component="label"
-        disabled={action.isPending}
-      >
-        {formik.values[field] ? "Change Image" : "Upload Image"}
-        <input
-          type="file"
-          hidden
-          onChange={handleFileChange}
-          accept="image/*"
-        />
-      </Button>
       {description && (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
           {description}
@@ -196,6 +175,7 @@ export default function ImageCustomizationField({
         variant="outlined"
         component="label"
         disabled={action.isPending}
+        sx={{ mt: 1 }}
       >
         {formik.values[field] ? "Change Image" : "Upload Image"}
         <input
